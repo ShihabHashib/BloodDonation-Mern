@@ -2,9 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  html {
+    font-family: "Jost", sans-serif;
+  }
+
+  body {
+    @apply font-jost;
+  }
+}
+
 body {
   background-color: #ffffff;
-  font-family: "Inter", sans-serif;
 }
 
 @keyframes fadeIn {

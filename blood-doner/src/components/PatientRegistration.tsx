@@ -11,28 +11,51 @@ const PatientRegistration = () => {
     alternateContact: "",
   });
 
+  // const handlePatientSubmit = async (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   try {
+  //     const response = await fetch("http://localhost:5000/api/patients", {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify(patientForm),
+  //     });
+  //     if (response.ok) {
+  //       alert("Patient registered successfully!");
+  //       setPatientForm({
+  //         fullName: "",
+  //         bloodType: "",
+  //         urgencyLevel: "",
+  //         hospital: "",
+  //         requiredUnits: 0,
+  //         mobile: "",
+  //         alternateContact: "",
+  //       });
+  //     }
+  //   } catch (error) {
+  //     console.error("Error registering patient:", error);
+  //     alert("Error registering patient");
+  //   }
+  // };
+
   const handlePatientSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await fetch("http://localhost:5000/api/patients", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(patientForm),
+      // Simulating API call with mock response
+      console.log("Patient registration data:", patientForm);
+
+      // Simulate successful registration
+      alert("Patient registered successfully!");
+      setPatientForm({
+        fullName: "",
+        bloodType: "",
+        urgencyLevel: "",
+        hospital: "",
+        requiredUnits: 0,
+        mobile: "",
+        alternateContact: "",
       });
-      if (response.ok) {
-        alert("Patient registered successfully!");
-        setPatientForm({
-          fullName: "",
-          bloodType: "",
-          urgencyLevel: "",
-          hospital: "",
-          requiredUnits: 0,
-          mobile: "",
-          alternateContact: "",
-        });
-      }
     } catch (error) {
       console.error("Error registering patient:", error);
       alert("Error registering patient");

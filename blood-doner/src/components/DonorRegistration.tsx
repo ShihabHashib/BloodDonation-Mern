@@ -9,31 +9,57 @@ const DonorRegistration = () => {
     mobile: "",
   });
 
+  // const handleDonorSubmit = async (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   try {
+  //     const response = await fetch("http://localhost:5000/api/donors", {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify(donorForm),
+  //     });
+  //     if (response.ok) {
+  //       alert("Donor registered successfully!");
+  //       setDonorForm({
+  //         fullName: "",
+  //         bloodType: "",
+  //         email: "",
+  //         phone: "",
+  //         mobile: "",
+  //       });
+  //     }
+  //   } catch (error) {
+  //     console.error("Error registering donor:", error);
+  //     alert("Error registering donor");
+  //   }
+  // };
+
+  // ... existing code ...
+
   const handleDonorSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await fetch("http://localhost:5000/api/donors", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(donorForm),
+      // Simulating API call with a timeout
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      // Mock successful registration
+      console.log("Donor registration data:", donorForm);
+      alert("Donor registered successfully!");
+      setDonorForm({
+        fullName: "",
+        bloodType: "",
+        email: "",
+        phone: "",
+        mobile: "",
       });
-      if (response.ok) {
-        alert("Donor registered successfully!");
-        setDonorForm({
-          fullName: "",
-          bloodType: "",
-          email: "",
-          phone: "",
-          mobile: "",
-        });
-      }
     } catch (error) {
       console.error("Error registering donor:", error);
       alert("Error registering donor");
     }
   };
+
+  // ... existing code ...
 
   return (
     <div className="container mx-auto px-4 py-8">

@@ -28,7 +28,7 @@ function App() {
                   ></path>
                 </svg>
                 <Link to="/" className="text-2xl font-bold">
-                  Blood Donation System
+                  UBlood
                 </Link>
               </div>
               <div className="hidden md:flex space-x-6">
