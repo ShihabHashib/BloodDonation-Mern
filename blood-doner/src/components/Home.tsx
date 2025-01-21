@@ -37,16 +37,25 @@ const Home = () => {
     // Add smooth scrolling behavior to html element
     document.documentElement.style.scrollBehavior = "smooth";
 
-    // Show/hide scroll-to-top button based on scroll position
+    // Add debouncing to reduce scroll event frequency
+    let timeoutId: NodeJS.Timeout;
     const handleScroll = () => {
-      setShowScrollTop(window.scrollY > 500);
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+      timeoutId = setTimeout(() => {
+        setShowScrollTop(window.scrollY > 500);
+      }, 100); // Adjust this value to balance responsiveness and performance
     };
 
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => {
       window.removeEventListener("scroll", handleScroll);
       // Clean up smooth scrolling behavior
       document.documentElement.style.scrollBehavior = "";
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
     };
   }, []);
 
@@ -990,7 +999,7 @@ const Home = () => {
                   whileHover={{ x: 5 }}
                   transition={{ type: "spring", stiffness: 300 }}
                 >
-                  New York - 1075 Firs Avenue
+                  Dhaka Bangladesh
                 </motion.p>
               </motion.div>
             </motion.div>
@@ -1195,6 +1204,9 @@ const Home = () => {
             className="fixed bottom-8 right-8 bg-red-600 text-white p-3 rounded-full shadow-lg hover:bg-red-700 transition-colors z-50"
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
+            transition={{ duration: 0.2 }}
+            layout={false}
+            layoutId="scrollButton"
           >
             <ArrowUpIcon className="w-6 h-6" />
           </motion.button>
