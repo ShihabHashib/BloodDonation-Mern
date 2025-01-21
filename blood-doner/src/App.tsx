@@ -7,6 +7,7 @@ import About from "./components/About";
 import Header from "./components/layout/Header";
 import Footer from "./components/layout/Footer";
 import BloodRequest from "./components/BloodRequest";
+import BloodRequestDetail from "./components/BloodRequestDetail";
 import "./App.css";
 
 function App() {
@@ -25,6 +26,7 @@ function App() {
           <Route path="/contact" element={<Contact />} />
           <Route path="/about" element={<About />} />
           <Route path="/blood-request" element={<BloodRequest />} />
+          <Route path="/blood-request/:id" element={<BloodRequestDetail />} />
         </Routes>
 
         <Footer />

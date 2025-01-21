@@ -5,6 +5,7 @@ import {
   CalendarIcon,
   BeakerIcon,
 } from "@heroicons/react/24/outline";
+import { Link } from "react-router-dom";
 
 interface RequestCardProps {
   type: string;
@@ -21,6 +22,7 @@ const RequestCard = ({
   date,
   urgency,
   bagsNeeded,
+  index,
 }: RequestCardProps) => (
   <motion.div
     initial="hidden"
@@ -70,9 +72,12 @@ const RequestCard = ({
         </div>
       </div>
 
-      <button className="mt-6 w-full bg-red-600 text-white py-2 px-4 font-medium hover:bg-red-700 transition-colors flex items-center justify-center gap-2">
-        Contact Now
-      </button>
+      <Link
+        to={`/blood-request/${index + 1}`}
+        className="mt-6 w-full bg-red-600 text-white py-2 px-4 font-medium hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
+      >
+        View Details
+      </Link>
     </div>
   </motion.div>
 );

@@ -9,38 +9,36 @@ const PatientRegistration = () => {
     requiredUnits: 0,
     mobile: "",
     alternateContact: "",
+    hospitalAddress: "",
+    additionalNotes: "",
+    postedBy: "",
   });
 
-  // const handlePatientSubmit = async (e: React.FormEvent) => {
-  //   e.preventDefault();
-  //   try {
-  //     const response = await fetch("http://localhost:5000/api/patients", {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify(patientForm),
-  //     });
-  //     if (response.ok) {
-  //       alert("Patient registered successfully!");
-  //       setPatientForm(
-  //         fullName: "",
-  //         bloodType: "",
-  //         urgencyLevel: "",
-  //         hospital: "",
-  //         requiredUnits: 0,
-  //         mobile: "",
-  //         alternateContact: "",
-  //       });
-  //     }
-  //   } catch (error) {
-  //     console.error("Error registering patient:", error);
-  //     alert("Error registering patient");
-  //   }
-  // };
+  const [captcha, setCaptcha] = useState({
+    num1: Math.floor(Math.random() * 10),
+    num2: Math.floor(Math.random() * 10),
+    userAnswer: "",
+  });
+
+  const generateNewCaptcha = () => {
+    setCaptcha({
+      ...captcha,
+      num1: Math.floor(Math.random() * 10),
+      num2: Math.floor(Math.random() * 10),
+      userAnswer: "",
+    });
+  };
 
   const handlePatientSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Verify captcha
+    if (parseInt(captcha.userAnswer) !== captcha.num1 + captcha.num2) {
+      alert("Incorrect CAPTCHA answer. Please try again.");
+      generateNewCaptcha();
+      return;
+    }
+
     try {
       // Simulating API call with mock response
       console.log("Patient registration data:", patientForm);
@@ -55,7 +53,13 @@ const PatientRegistration = () => {
         requiredUnits: 0,
         mobile: "",
         alternateContact: "",
+        hospitalAddress: "",
+        additionalNotes: "",
+        postedBy: "",
       });
+
+      // After successful submission, generate new captcha
+      generateNewCaptcha();
     } catch (error) {
       console.error("Error registering patient:", error);
       alert("Error registering patient");
@@ -104,9 +108,7 @@ const PatientRegistration = () => {
               </select>
             </div>
             <div>
-              <label className="block text-gray-700 mb-2">
-                Hospital Name or Location
-              </label>
+              <label className="block text-gray-700 mb-2">Address</label>
               <input
                 type="text"
                 className="w-full p-2 border focus:ring-2 focus:ring-red-500 focus:border-transparent"
@@ -114,7 +116,7 @@ const PatientRegistration = () => {
                 onChange={(e) =>
                   setPatientForm({ ...patientForm, hospital: e.target.value })
                 }
-                placeholder="Enter hospital name or location address"
+                placeholder="Location here"
                 required
               />
             </div>
@@ -188,11 +190,84 @@ const PatientRegistration = () => {
                 required
               />
             </div>
+            <div>
+              <label className="block text-gray-700 mb-2">
+                Hospital Address
+              </label>
+              <textarea
+                className="w-full p-2 border focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                value={patientForm.hospitalAddress}
+                onChange={(e) =>
+                  setPatientForm({
+                    ...patientForm,
+                    hospitalAddress: e.target.value,
+                  })
+                }
+                placeholder="Enter complete hospital address"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-gray-700 mb-2">
+                Additional Notes
+              </label>
+              <textarea
+                className="w-full p-2 border focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                value={patientForm.additionalNotes}
+                onChange={(e) =>
+                  setPatientForm({
+                    ...patientForm,
+                    additionalNotes: e.target.value,
+                  })
+                }
+                placeholder="Enter any additional information or special requirements"
+                rows={3}
+              />
+            </div>
+            <div>
+              <label className="block text-gray-700 mb-2">Posted By</label>
+              <input
+                type="text"
+                className="w-full p-2 border focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                value={patientForm.postedBy}
+                onChange={(e) =>
+                  setPatientForm({ ...patientForm, postedBy: e.target.value })
+                }
+                placeholder="Enter your name or designation"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-gray-700 mb-2">
+                Verify you're human
+              </label>
+              <div className="flex items-center space-x-2">
+                <span className="text-lg font-medium">
+                  {captcha.num1} + {captcha.num2} ={" "}
+                </span>
+                <input
+                  type="number"
+                  className="w-24 p-2 border focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  value={captcha.userAnswer}
+                  onChange={(e) =>
+                    setCaptcha({ ...captcha, userAnswer: e.target.value })
+                  }
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={generateNewCaptcha}
+                  className="p-2 text-red-500 hover:text-red-600"
+                >
+                  ↻ New
+                </button>
+              </div>
+            </div>
             <button
               type="submit"
               className="w-full bg-red-500 text-white py-2 hover:bg-red-600 transition-colors"
             >
-              Register Patient
+              Request Blood
             </button>
           </form>
         </div>
