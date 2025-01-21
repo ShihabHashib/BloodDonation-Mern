@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   AcademicCapIcon,
   FireIcon,
@@ -7,8 +7,9 @@ import {
   PhoneIcon,
   MapPinIcon,
   EnvelopeIcon,
+  ArrowUpIcon,
 } from "@heroicons/react/24/outline";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 const Home = () => {
   // Add fade-in-up animation variant
@@ -28,6 +29,32 @@ const Home = () => {
         staggerChildren: 0.2,
       },
     },
+  };
+
+  const [showScrollTop, setShowScrollTop] = useState(false);
+
+  useEffect(() => {
+    // Add smooth scrolling behavior to html element
+    document.documentElement.style.scrollBehavior = "smooth";
+
+    // Show/hide scroll-to-top button based on scroll position
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 500);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      // Clean up smooth scrolling behavior
+      document.documentElement.style.scrollBehavior = "";
+    };
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
   };
 
   return (
@@ -1127,7 +1154,7 @@ const Home = () => {
             </p>
             <motion.a
               href="/contact"
-              className="inline-flex items-center gap-2 bg-red-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-700 transition-colors"
+              className="inline-flex items-center gap-2 bg-red-600 text-white px-6 py-3 font-semibold hover:bg-red-700 transition-colors"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
@@ -1156,6 +1183,23 @@ const Home = () => {
           </motion.div>
         </div>
       </div>
+
+      {/* Scroll to Top Button */}
+      <AnimatePresence>
+        {showScrollTop && (
+          <motion.button
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            onClick={scrollToTop}
+            className="fixed bottom-8 right-8 bg-red-600 text-white p-3 rounded-full shadow-lg hover:bg-red-700 transition-colors z-50"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+          >
+            <ArrowUpIcon className="w-6 h-6" />
+          </motion.button>
+        )}
+      </AnimatePresence>
     </>
   );
 };
