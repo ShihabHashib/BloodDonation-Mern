@@ -6,7 +6,6 @@ const DonorRegistration = () => {
     bloodType: "",
     email: "",
     phone: "",
-    mobile: "",
   });
 
   // const handleDonorSubmit = async (e: React.FormEvent) => {
@@ -26,7 +25,6 @@ const DonorRegistration = () => {
   //         bloodType: "",
   //         email: "",
   //         phone: "",
-  //         mobile: "",
   //       });
   //     }
   //   } catch (error) {
@@ -51,7 +49,6 @@ const DonorRegistration = () => {
         bloodType: "",
         email: "",
         phone: "",
-        mobile: "",
       });
     } catch (error) {
       console.error("Error registering donor:", error);
@@ -71,7 +68,7 @@ const DonorRegistration = () => {
               <label className="block text-gray-700 mb-2">Full Name</label>
               <input
                 type="text"
-                className="w-full p-2 border rounded focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                className="w-full p-2 border focus:ring-2 focus:ring-red-500 focus:border-transparent"
                 value={donorForm.fullName}
                 onChange={(e) =>
                   setDonorForm({ ...donorForm, fullName: e.target.value })
@@ -82,7 +79,7 @@ const DonorRegistration = () => {
             <div>
               <label className="block text-gray-700 mb-2">Blood Type</label>
               <select
-                className="w-full p-2 border rounded focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                className="w-full p-2 border focus:ring-2 focus:ring-red-500 focus:border-transparent"
                 value={donorForm.bloodType}
                 onChange={(e) =>
                   setDonorForm({ ...donorForm, bloodType: e.target.value })
@@ -104,7 +101,7 @@ const DonorRegistration = () => {
               <label className="block text-gray-700 mb-2">Email</label>
               <input
                 type="email"
-                className="w-full p-2 border rounded focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                className="w-full p-2 border focus:ring-2 focus:ring-red-500 focus:border-transparent"
                 value={donorForm.email}
                 onChange={(e) =>
                   setDonorForm({ ...donorForm, email: e.target.value })
@@ -116,31 +113,17 @@ const DonorRegistration = () => {
               <label className="block text-gray-700 mb-2">Phone</label>
               <input
                 type="tel"
-                className="w-full p-2 border rounded focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                className="w-full p-2 border focus:ring-2 focus:ring-red-500 focus:border-transparent"
                 value={donorForm.phone}
                 onChange={(e) =>
                   setDonorForm({ ...donorForm, phone: e.target.value })
                 }
-                placeholder="Home/Office Phone"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-gray-700 mb-2">Mobile Number</label>
-              <input
-                type="tel"
-                className="w-full p-2 border rounded focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                value={donorForm.mobile}
-                onChange={(e) =>
-                  setDonorForm({ ...donorForm, mobile: e.target.value })
-                }
-                placeholder="Enter your mobile number"
                 required
               />
             </div>
             <button
               type="submit"
-              className="w-full bg-red-500 text-white py-2 rounded hover:bg-red-600 transition-colors"
+              className="w-full bg-red-500 text-white py-2 hover:bg-red-600 transition-colors"
             >
               Register as Donor
             </button>

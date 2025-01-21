@@ -23,7 +23,7 @@ const PatientRegistration = () => {
   //     });
   //     if (response.ok) {
   //       alert("Patient registered successfully!");
-  //       setPatientForm({
+  //       setPatientForm(
   //         fullName: "",
   //         bloodType: "",
   //         urgencyLevel: "",
@@ -66,13 +66,15 @@ const PatientRegistration = () => {
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-2xl mx-auto">
         <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-2xl font-semibold mb-6">Patient Registration</h3>
+          <h3 className="text-2xl font-semibold mb-6">
+            Blood Request Registration
+          </h3>
           <form onSubmit={handlePatientSubmit} className="space-y-4">
             <div>
-              <label className="block text-gray-700 mb-2">Full Name</label>
+              <label className="block text-gray-700 mb-2">Patient Name</label>
               <input
                 type="text"
-                className="w-full p-2 border rounded focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                className="w-full p-2 border focus:ring-2 focus:ring-red-500 focus:border-transparent"
                 value={patientForm.fullName}
                 onChange={(e) =>
                   setPatientForm({ ...patientForm, fullName: e.target.value })
@@ -83,7 +85,7 @@ const PatientRegistration = () => {
             <div>
               <label className="block text-gray-700 mb-2">Blood Type</label>
               <select
-                className="w-full p-2 border rounded focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                className="w-full p-2 border focus:ring-2 focus:ring-red-500 focus:border-transparent"
                 value={patientForm.bloodType}
                 onChange={(e) =>
                   setPatientForm({ ...patientForm, bloodType: e.target.value })
@@ -102,14 +104,17 @@ const PatientRegistration = () => {
               </select>
             </div>
             <div>
-              <label className="block text-gray-700 mb-2">Hospital</label>
+              <label className="block text-gray-700 mb-2">
+                Hospital Name or Location
+              </label>
               <input
                 type="text"
-                className="w-full p-2 border rounded focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                className="w-full p-2 border focus:ring-2 focus:ring-red-500 focus:border-transparent"
                 value={patientForm.hospital}
                 onChange={(e) =>
                   setPatientForm({ ...patientForm, hospital: e.target.value })
                 }
+                placeholder="Enter hospital name or location address"
                 required
               />
             </div>
@@ -117,7 +122,7 @@ const PatientRegistration = () => {
               <label className="block text-gray-700 mb-2">Mobile Number</label>
               <input
                 type="tel"
-                className="w-full p-2 border rounded focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                className="w-full p-2 border focus:ring-2 focus:ring-red-500 focus:border-transparent"
                 value={patientForm.mobile}
                 onChange={(e) =>
                   setPatientForm({ ...patientForm, mobile: e.target.value })
@@ -132,7 +137,7 @@ const PatientRegistration = () => {
               </label>
               <input
                 type="tel"
-                className="w-full p-2 border rounded focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                className="w-full p-2 border focus:ring-2 focus:ring-red-500 focus:border-transparent"
                 value={patientForm.alternateContact}
                 onChange={(e) =>
                   setPatientForm({
@@ -147,7 +152,7 @@ const PatientRegistration = () => {
               <label className="block text-gray-700 mb-2">Required Units</label>
               <input
                 type="number"
-                className="w-full p-2 border rounded focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                className="w-full p-2 border focus:ring-2 focus:ring-red-500 focus:border-transparent"
                 value={patientForm.requiredUnits}
                 onChange={(e) =>
                   setPatientForm({
@@ -155,13 +160,18 @@ const PatientRegistration = () => {
                     requiredUnits: parseInt(e.target.value),
                   })
                 }
+                min="1"
+                max="10"
                 required
               />
             </div>
             <div>
-              <label className="block text-gray-700 mb-2">Urgency Level</label>
-              <select
-                className="w-full p-2 border rounded focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              <label className="block text-gray-700 mb-2">
+                Need Blood Within
+              </label>
+              <input
+                type="date"
+                className="w-full p-2 border focus:ring-2 focus:ring-red-500 focus:border-transparent"
                 value={patientForm.urgencyLevel}
                 onChange={(e) =>
                   setPatientForm({
@@ -169,17 +179,18 @@ const PatientRegistration = () => {
                     urgencyLevel: e.target.value,
                   })
                 }
+                min={new Date().toISOString().split("T")[0]}
+                max={
+                  new Date(Date.now() + 15 * 24 * 60 * 60 * 1000)
+                    .toISOString()
+                    .split("T")[0]
+                }
                 required
-              >
-                <option value="">Select Urgency Level</option>
-                <option value="high">High</option>
-                <option value="medium">Medium</option>
-                <option value="low">Low</option>
-              </select>
+              />
             </div>
             <button
               type="submit"
-              className="w-full bg-red-500 text-white py-2 rounded hover:bg-red-600 transition-colors"
+              className="w-full bg-red-500 text-white py-2 hover:bg-red-600 transition-colors"
             >
               Register Patient
             </button>
