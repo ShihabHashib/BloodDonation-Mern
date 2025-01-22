@@ -1,91 +1,200 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
-const Header = () => {
+const Header: React.FC = () => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const navigate = useNavigate();
+  const { isLoggedIn, userType, logout } = useAuth();
+
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
+
   return (
-    <nav className="bg-red-600 text-white shadow-lg">
-      <div className="container mx-auto px-4 py-3">
-        <div className="flex justify-between items-center">
-          {/* Logo and Brand */}
-          <div className="flex items-center space-x-3">
-            <svg
-              className="w-8 h-8 text-white"
-              fill="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path d="M12 21.5C7.313 21.5 3.5 17.687 3.5 13C3.5 8.313 12 2.5 12 2.5C12 2.5 20.5 8.313 20.5 13C20.5 17.687 16.687 21.5 12 21.5Z" />
-            </svg>
-            <Link
-              to="/"
-              className="text-2xl font-bold tracking-tight hover:text-red-100"
-            >
+    <header className="bg-red-600 shadow-md">
+      <div className="container mx-auto px-4">
+        <div className="flex justify-between items-center h-16">
+          {/* Logo */}
+          <Link to="/" className="flex items-center space-x-2">
+            <img src="/logo.png" alt="UBlood Logo" className="h-8 w-auto" />
+            <span className="text-white text-xl font-bold tracking-tight">
               UBlood
-            </Link>
-          </div>
+            </span>
+          </Link>
+
+          {/* Mobile menu button */}
+          <button
+            onClick={toggleMenu}
+            className="md:hidden p-2 rounded-md text-white hover:text-gray-200 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-400"
+          >
+            <svg
+              className="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              {isMenuOpen ? (
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              ) : (
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
+              )}
+            </svg>
+          </button>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
+          <nav className="hidden md:flex items-center space-x-4">
             <Link
               to="/"
-              className="font-medium hover:text-red-100 transition-colors duration-200"
+              className="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium"
             >
               Home
             </Link>
             <Link
-              to="/donor-registration"
-              className="font-medium hover:text-red-100 transition-colors duration-200"
-            >
-              Become a Donor
-            </Link>
-
-            <Link
               to="/blood-request"
-              className="font-medium hover:text-red-100 transition-colors duration-200"
+              className="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium"
             >
               Blood Requests
             </Link>
             <Link
               to="/about"
-              className="font-medium hover:text-red-100 transition-colors duration-200"
+              className="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium"
             >
               About
             </Link>
             <Link
               to="/contact"
-              className="font-medium hover:text-red-100 transition-colors duration-200"
+              className="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium"
             >
               Contact
             </Link>
-            <Link
-              to="/patient-registration"
-              className="px-4 py-2 bg-white text-red-600 font-medium hover:bg-red-50 transition-colors duration-200"
-            >
-              Need Blood
-            </Link>
-          </div>
-
-          {/* Mobile Menu Button */}
-          <div className="md:hidden">
-            <button className="p-2 rounded-lg hover:bg-red-500 focus:outline-none focus:ring-2 focus:ring-red-400">
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
-              </svg>
-            </button>
-          </div>
+            {isLoggedIn ? (
+              <>
+                {userType === "donor" && (
+                  <Link
+                    to="/donor-profile"
+                    className="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium"
+                  >
+                    Profile
+                  </Link>
+                )}
+                <button
+                  onClick={handleLogout}
+                  className="bg-white text-red-600 px-4 py-2 text-sm font-medium hover:bg-gray-100"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/donor-registration"
+                  className="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium"
+                >
+                  Become a Donor
+                </Link>
+                <Link
+                  to="/login"
+                  className="bg-white text-red-600 px-4 py-2 text-sm font-medium hover:bg-gray-100"
+                >
+                  Login
+                </Link>
+              </>
+            )}
+          </nav>
         </div>
+
+        {/* Mobile Navigation */}
+        {isMenuOpen && (
+          <div className="md:hidden py-4">
+            <div className="flex flex-col space-y-2">
+              <Link
+                to="/"
+                className="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Home
+              </Link>
+              <Link
+                to="/blood-request"
+                className="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Blood Requests
+              </Link>
+              <Link
+                to="/about"
+                className="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                About
+              </Link>
+              <Link
+                to="/contact"
+                className="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Contact
+              </Link>
+              {isLoggedIn ? (
+                <>
+                  {userType === "donor" && (
+                    <Link
+                      to="/donor-profile"
+                      className="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      Profile
+                    </Link>
+                  )}
+                  <button
+                    onClick={() => {
+                      handleLogout();
+                      setIsMenuOpen(false);
+                    }}
+                    className="text-left text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium"
+                  >
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    to="/donor-registration"
+                    className="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Register
+                  </Link>
+                  <Link
+                    to="/login"
+                    className="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Login
+                  </Link>
+                </>
+              )}
+            </div>
+          </div>
+        )}
       </div>
-    </nav>
+    </header>
   );
 };
 

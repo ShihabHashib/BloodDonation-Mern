@@ -74,6 +74,26 @@ const Footer = () => {
               </li>
             </ul>
           </div>
+          <div>
+            <h4 className="text-xl font-semibold mb-4">Legal</h4>
+            <ul className="space-y-2 text-gray-200">
+              <li>
+                <Link to="/terms" className="hover:text-white">
+                  Terms & Conditions
+                </Link>
+              </li>
+              <li>
+                <Link to="/rules" className="hover:text-white">
+                  Donation Rules
+                </Link>
+              </li>
+              <li>
+                <Link to="/privacy" className="hover:text-white">
+                  Privacy Policy
+                </Link>
+              </li>
+            </ul>
+          </div>
 
           {/* Contact Information */}
           <div>
@@ -94,28 +114,6 @@ const Footer = () => {
                 </span>
               </li>
             </ul>
-          </div>
-
-          {/* Newsletter Signup */}
-          <div>
-            <h4 className="text-xl font-semibold mb-4">Stay Updated</h4>
-            <p className="text-gray-200 mb-4">
-              Subscribe to our newsletter for updates and blood donation
-              campaigns.
-            </p>
-            <form className="space-y-3">
-              <input
-                type="email"
-                placeholder="Enter your email"
-                className="w-full px-4 py-2 rounded bg-red-950 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400"
-              />
-              <button
-                type="submit"
-                className="w-full bg-red-700 hover:bg-red-600 text-white py-2 px-4 rounded transition-colors"
-              >
-                Subscribe
-              </button>
-            </form>
           </div>
         </div>
 

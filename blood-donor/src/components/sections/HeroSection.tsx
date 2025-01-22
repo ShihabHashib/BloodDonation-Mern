@@ -12,14 +12,14 @@ const HeroSection = () => {
       >
         {/* Right Content */}
         <motion.div
-          className="md:w-1/2 space-y-6 relative z-10 text-black ml-auto text-right"
+          className="md:w-1/2 w-full space-y-4 md:space-y-6 relative z-10 text-black md:ml-auto text-center md:text-right"
           initial={{ x: 100, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
         >
           {/* Small Heading */}
           <motion.div
-            className="text-red-600 text-3xl font-medium"
+            className="text-red-600 text-xl md:text-2xl lg:text-3xl font-medium"
             initial={{ x: 100, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.3 }}
@@ -29,7 +29,7 @@ const HeroSection = () => {
 
           {/* Main Heading */}
           <motion.h1
-            className="text-7xl font-bold leading-tight"
+            className="text-4xl md:text-5xl lg:text-7xl font-bold leading-tight"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.5 }}
@@ -54,7 +54,7 @@ const HeroSection = () => {
 
           {/* CTA Button */}
           <motion.button
-            className="bg-red-600 text-white py-5 px-10 font-medium hover:bg-red-700 transition-colors relative overflow-hidden group"
+            className="bg-red-600 text-white py-3 md:py-4 lg:py-5 px-6 md:px-8 lg:px-10 font-medium hover:bg-red-700 transition-colors relative overflow-hidden group"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 1.1 }}
@@ -74,13 +74,13 @@ const HeroSection = () => {
 
       {/* Bottom Action Buttons */}
       <motion.div
-        className="absolute bottom-0 left-0 right-0 container mx-auto px-4 grid grid-cols-1 md:grid-cols-2 -mb-24"
+        className="absolute bottom-0 left-0 right-0 container mx-auto px-4 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-0 -mb-32 md:-mb-24"
         initial={{ y: 100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.8, delay: 1.2 }}
       >
         <motion.div
-          className="bg-red-600 text-white p-8"
+          className="bg-red-600 text-white p-6 md:p-8"
           initial={{ opacity: 0, y: 100 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{
@@ -90,8 +90,10 @@ const HeroSection = () => {
           }}
           whileHover={{ y: -5, transition: { duration: 0.2 } }}
         >
-          <h3 className="text-2xl font-bold mb-4">Register as Patient</h3>
-          <p className="mb-4">
+          <h3 className="text-xl md:text-2xl font-bold mb-2 md:mb-4">
+            Register as Patient
+          </h3>
+          <p className="text-sm md:text-base mb-4">
             Register as a patient in need of blood donation. Our platform
             connects you with willing donors to help save lives through timely
             blood donations.
@@ -126,7 +128,7 @@ const HeroSection = () => {
           </motion.a>
         </motion.div>
         <motion.div
-          className="bg-gray-900 text-white p-8"
+          className="bg-gray-900 text-white p-6 md:p-8"
           initial={{ opacity: 0, y: 100 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{
@@ -136,8 +138,10 @@ const HeroSection = () => {
           }}
           whileHover={{ y: -5, transition: { duration: 0.2 } }}
         >
-          <h3 className="text-2xl font-bold mb-4">Donate as Donor</h3>
-          <p className="mb-4">
+          <h3 className="text-xl md:text-2xl font-bold mb-2 md:mb-4">
+            Donate as Donor
+          </h3>
+          <p className="text-sm md:text-base mb-4">
             Join our community of blood donors and make a difference in
             someone's life. Your donation can help save lives and support those
             in need.

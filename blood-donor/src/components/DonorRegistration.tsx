@@ -6,6 +6,7 @@ const DonorRegistration = () => {
     bloodType: "",
     email: "",
     phone: "",
+    password: "",
   });
 
   // const handleDonorSubmit = async (e: React.FormEvent) => {
@@ -49,6 +50,7 @@ const DonorRegistration = () => {
         bloodType: "",
         email: "",
         phone: "",
+        password: "",
       });
     } catch (error) {
       console.error("Error registering donor:", error);
@@ -61,7 +63,7 @@ const DonorRegistration = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-2xl mx-auto">
-        <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="bg-white shadow-md p-6">
           <h3 className="text-2xl font-semibold mb-6">Donor Registration</h3>
           <form onSubmit={handleDonorSubmit} className="space-y-4">
             <div>
@@ -121,6 +123,18 @@ const DonorRegistration = () => {
                 required
               />
             </div>
+            <div>
+              <label className="block text-gray-700 mb-2">Password</label>
+              <input
+                type="password"
+                className="w-full p-2 border focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                value={donorForm.password}
+                onChange={(e) =>
+                  setDonorForm({ ...donorForm, password: e.target.value })
+                }
+                required
+              />
+            </div>
             <button
               type="submit"
               className="w-full bg-red-500 text-white py-2 hover:bg-red-600 transition-colors"
@@ -128,6 +142,14 @@ const DonorRegistration = () => {
               Register as Donor
             </button>
           </form>
+          <div className="mt-4 text-center">
+            <p className="text-gray-600">
+              Already a donor?{" "}
+              <a href="/login" className="text-red-500 hover:text-red-600">
+                Login here
+              </a>
+            </p>
+          </div>
         </div>
       </div>
     </div>
