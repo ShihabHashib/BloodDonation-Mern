@@ -1,6 +1,9 @@
 import React, { useState } from "react";
+import { useNotification } from "../context/NotificationContext";
 
 const DonorRegistration = () => {
+  const { showNotification } = useNotification();
+
   const [donorForm, setDonorForm] = useState({
     fullName: "",
     bloodType: "",
@@ -44,7 +47,7 @@ const DonorRegistration = () => {
 
       // Mock successful registration
       console.log("Donor registration data:", donorForm);
-      alert("Donor registered successfully!");
+      showNotification("success", "Registration successful!");
       setDonorForm({
         fullName: "",
         bloodType: "",
@@ -54,7 +57,7 @@ const DonorRegistration = () => {
       });
     } catch (error) {
       console.error("Error registering donor:", error);
-      alert("Error registering donor");
+      showNotification("error", "Registration failed. Please try again later.");
     }
   };
 

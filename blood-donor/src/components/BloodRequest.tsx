@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { motion } from "framer-motion";
 import { MagnifyingGlassIcon, FunnelIcon } from "@heroicons/react/24/outline";
 import RequestCard from "./cards/RequestCard";
@@ -72,7 +72,13 @@ const BloodRequest = () => {
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [selectedUrgency, setSelectedUrgency] = useState<string>("");
   const [showFilters, setShowFilters] = useState(false);
+  const [displayCount, setDisplayCount] = useState(6);
+  const [loading, setLoading] = useState(false);
 
+  // Create ref for the loader element
+  const loaderRef = React.useRef(null);
+
+  // Move filteredRequests before the useEffect
   const filteredRequests = useMemo(() => {
     return requests.filter((request) => {
       const matchesSearch =
@@ -107,17 +113,57 @@ const BloodRequest = () => {
     });
   }, [searchTerm, selectedBloodType, selectedDate, selectedUrgency]);
 
+  // Set up intersection observer
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const target = entries[0];
+        if (
+          target.isIntersecting &&
+          !loading &&
+          displayCount < filteredRequests.length
+        ) {
+          setLoading(true);
+          // Simulate loading delay
+          setTimeout(() => {
+            setDisplayCount((prev) =>
+              Math.min(prev + 6, filteredRequests.length)
+            );
+            setLoading(false);
+          }, 500);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (loaderRef.current) {
+      observer.observe(loaderRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [loading, displayCount, filteredRequests.length]);
+
   return (
     <div className="py-20 bg-gray-50">
       <div className="container mx-auto px-4">
-        {/* Header */}
+        {/* Header with Post Request Button */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-12"
         >
-          <h1 className="text-4xl font-bold mb-4">Blood Requests</h1>
-          <p className="text-gray-600 max-w-2xl mx-auto">
+          <div className="flex justify-between items-center mb-4">
+            <h1 className="text-4xl font-bold">Blood Requests</h1>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="bg-red-600 text-white px-6 py-2 shadow-md hover:bg-red-700 transition-colors duration-200"
+              onClick={() => (window.location.href = "/patient-registration")}
+            >
+              Post Blood Request
+            </motion.button>
+          </div>
+          <p className="text-gray-600 text-left">
             Find and respond to blood donation requests in your area. Every
             donation can help save a life.
           </p>
@@ -200,9 +246,25 @@ const BloodRequest = () => {
               animate="show"
             >
               {filteredRequests.length > 0 ? (
-                filteredRequests.map((request, index) => (
-                  <RequestCard key={index} {...request} index={index} />
-                ))
+                <>
+                  {filteredRequests
+                    .slice(0, displayCount)
+                    .map((request, index) => (
+                      <RequestCard key={index} {...request} index={index} />
+                    ))}
+                  {displayCount < filteredRequests.length && (
+                    <div
+                      ref={loaderRef}
+                      className="col-span-full flex justify-center py-4"
+                    >
+                      {loading ? (
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600" />
+                      ) : (
+                        <div className="h-8" /> // Invisible element to trigger intersection
+                      )}
+                    </div>
+                  )}
+                </>
               ) : (
                 <div className="col-span-full text-center py-12 text-gray-500">
                   No blood requests match your search criteria.
