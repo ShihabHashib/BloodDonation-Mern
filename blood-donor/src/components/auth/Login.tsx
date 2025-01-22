@@ -2,31 +2,47 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { EnvelopeIcon, LockClosedIcon } from "@heroicons/react/24/outline";
+import { LoginCredentials } from "../../types";
+import { useAuth } from "../../context/AuthContext";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 interface LoginForm {
   email: string;
   password: string;
 }
 
+const loginSchema = z.object({
+  email: z.string().email("Please enter a valid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+});
+
+type LoginFormData = z.infer<typeof loginSchema>;
+
 const Login = () => {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState<LoginForm>({
-    email: "",
-    password: "",
-  });
+  const { login } = useAuth();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+  });
+
+  const onSubmit = async (data: LoginFormData) => {
     setError("");
     setLoading(true);
 
     try {
-      // TODO: Implement actual authentication
-      console.log("Login attempt with:", formData);
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await login({
+        email: data.email,
+        password: data.password,
+      });
       navigate("/dashboard");
     } catch (err) {
       setError("Invalid email or password");
@@ -54,7 +70,7 @@ const Login = () => {
           transition={{ duration: 0.5, delay: 0.2 }}
           className="bg-white shadow p-8"
         >
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-600 p-3 text-sm">
                 {error}
@@ -73,15 +89,16 @@ const Login = () => {
                 <input
                   id="email"
                   type="email"
-                  required
-                  value={formData.email}
-                  onChange={(e) =>
-                    setFormData({ ...formData, email: e.target.value })
-                  }
+                  {...register("email")}
                   className="pl-10 w-full border border-gray-300 p-3 focus:outline-none focus:border-red-500"
                   placeholder="Enter your email"
                 />
               </div>
+              {errors.email && (
+                <p className="mt-1 text-sm text-red-600">
+                  {errors.email.message}
+                </p>
+              )}
             </div>
 
             <div>
@@ -96,15 +113,16 @@ const Login = () => {
                 <input
                   id="password"
                   type="password"
-                  required
-                  value={formData.password}
-                  onChange={(e) =>
-                    setFormData({ ...formData, password: e.target.value })
-                  }
+                  {...register("password")}
                   className="pl-10 w-full border border-gray-300 p-3 focus:outline-none focus:border-red-500"
                   placeholder="Enter your password"
                 />
               </div>
+              {errors.password && (
+                <p className="mt-1 text-sm text-red-600">
+                  {errors.password.message}
+                </p>
+              )}
             </div>
 
             <div className="flex items-center justify-between">

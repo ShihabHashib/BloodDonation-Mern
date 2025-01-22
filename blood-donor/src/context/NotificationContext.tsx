@@ -1,14 +1,7 @@
 import React, { createContext, useContext, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { XMarkIcon } from "@heroicons/react/24/outline";
-
-type NotificationType = "success" | "error" | "info" | "warning";
-
-interface Notification {
-  id: string;
-  type: NotificationType;
-  message: string;
-}
+import { Notification, NotificationType } from "../types";
 
 interface NotificationContextType {
   showNotification: (type: NotificationType, message: string) => void;
@@ -45,10 +38,10 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
       value={{ showNotification, hideNotification }}
     >
       {children}
-      <div className="fixed top-4 right-4 z-50 space-y-2">
+      <div className="fixed bottom-4 right-4 z-50 space-y-2">
         <AnimatePresence>
           {notifications.map((notification) => (
-            <Notification
+            <NotificationItem
               key={notification.id}
               notification={notification}
               onClose={() => hideNotification(notification.id)}
@@ -65,7 +58,7 @@ interface NotificationProps {
   onClose: () => void;
 }
 
-const Notification: React.FC<NotificationProps> = ({
+const NotificationItem: React.FC<NotificationProps> = ({
   notification,
   onClose,
 }) => {

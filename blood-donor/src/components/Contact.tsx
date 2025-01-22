@@ -1,31 +1,39 @@
-import React from "react";
 import { motion } from "framer-motion";
-import { FaPhone, FaEnvelope, FaMapMarkerAlt, FaClock } from "react-icons/fa";
+import {
+  PhoneIcon,
+  EnvelopeIcon,
+  MapPinIcon,
+  ClockIcon,
+} from "@heroicons/react/24/outline";
+import { CONTACT_INFO } from "../data";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 
-const contactInfo = [
-  {
-    icon: FaPhone,
-    title: "Phone",
-    details: ["+1 234 567 890", "+1 234 567 891"],
-  },
-  {
-    icon: FaEnvelope,
-    title: "Email",
-    details: ["info@blooddonation.com", "support@blooddonation.com"],
-  },
-  {
-    icon: FaMapMarkerAlt,
-    title: "Location",
-    details: ["123 Blood Drive", "Medical City, State 12345"],
-  },
-  {
-    icon: FaClock,
-    title: "Working Hours",
-    details: ["Monday - Friday: 9AM - 6PM", "Saturday: 9AM - 2PM"],
-  },
-] as const;
+// Add form schema
+const contactFormSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters"),
+  email: z.string().email("Please enter a valid email address"),
+  subject: z.string().min(5, "Subject must be at least 5 characters"),
+  message: z.string().min(10, "Message must be at least 10 characters"),
+});
+
+type ContactFormData = z.infer<typeof contactFormSchema>;
 
 const Contact = () => {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<ContactFormData>({
+    resolver: zodResolver(contactFormSchema),
+  });
+
+  const onSubmit = (data: ContactFormData) => {
+    console.log(data);
+    // Handle form submission here
+  };
+
   return (
     <div className="py-20 bg-gray-50">
       <div className="container mx-auto px-4">
@@ -46,7 +54,7 @@ const Contact = () => {
 
         {/* Contact Information Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
-          {contactInfo.map((info, index) => (
+          {CONTACT_INFO.map((info, index) => (
             <motion.div
               key={info.title}
               initial={{ opacity: 0, y: 20 }}
@@ -55,7 +63,18 @@ const Contact = () => {
               className="bg-white p-6 rounded-lg shadow-lg"
             >
               <div className="flex items-center mb-4">
-                <info.icon className="text-red-600 text-2xl mr-3" />
+                {info.title.includes("Phone") && (
+                  <PhoneIcon className="h-6 w-6 text-red-600 mr-3" />
+                )}
+                {info.title.includes("Email") && (
+                  <EnvelopeIcon className="h-6 w-6 text-red-600 mr-3" />
+                )}
+                {info.title.includes("Location") && (
+                  <MapPinIcon className="h-6 w-6 text-red-600 mr-3" />
+                )}
+                {info.title.includes("Hours") && (
+                  <ClockIcon className="h-6 w-6 text-red-600 mr-3" />
+                )}
                 <h3 className="text-xl font-semibold">{info.title}</h3>
               </div>
               {info.details.map((detail, i) => (
@@ -77,29 +96,41 @@ const Contact = () => {
           <h2 className="text-3xl font-bold mb-6 text-center">
             Send us a Message
           </h2>
-          <form className="space-y-6">
+          <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-gray-700 mb-2" htmlFor="name">
                   Name
                 </label>
                 <input
+                  {...register("name")}
                   type="text"
                   id="name"
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
                   placeholder="Your name"
                 />
+                {errors.name && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.name.message}
+                  </p>
+                )}
               </div>
               <div>
                 <label className="block text-gray-700 mb-2" htmlFor="email">
                   Email
                 </label>
                 <input
+                  {...register("email")}
                   type="email"
                   id="email"
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
                   placeholder="Your email"
                 />
+                {errors.email && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.email.message}
+                  </p>
+                )}
               </div>
             </div>
             <div>
@@ -107,22 +138,34 @@ const Contact = () => {
                 Subject
               </label>
               <input
+                {...register("subject")}
                 type="text"
                 id="subject"
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
                 placeholder="Message subject"
               />
+              {errors.subject && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.subject.message}
+                </p>
+              )}
             </div>
             <div>
               <label className="block text-gray-700 mb-2" htmlFor="message">
                 Message
               </label>
               <textarea
+                {...register("message")}
                 id="message"
                 rows={6}
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
                 placeholder="Your message"
               ></textarea>
+              {errors.message && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.message.message}
+                </p>
+              )}
             </div>
             <motion.button
               whileHover={{ scale: 1.02 }}

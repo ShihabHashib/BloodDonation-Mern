@@ -17,7 +17,7 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand Section */}
           <div className="col-span-1">
-            <h3 className="text-2xl font-bold mb-4">Blood Donor</h3>
+            <h3 className="text-2xl font-bold mb-4">UBlood</h3>
             <p className="text-gray-200 mb-4">
               Connecting lives through the gift of blood donation. Every drop
               counts, every donor matters.
@@ -120,7 +120,7 @@ const Footer = () => {
         {/* Bottom Bar */}
         <div className="border-t border-red-700 mt-12 pt-8 text-center">
           <p className="text-gray-200">
-            © {new Date().getFullYear()} Blood Donor. All rights reserved.
+            © {new Date().getFullYear()} UBlood. All rights reserved.
           </p>
         </div>
       </div>

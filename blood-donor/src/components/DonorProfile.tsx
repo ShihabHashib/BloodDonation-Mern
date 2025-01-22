@@ -1,19 +1,11 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { User, DonationSchedule } from "../types";
+import { MOCK_USER } from "../data";
 
 const DonorProfile: React.FC = () => {
   const navigate = useNavigate();
-
-  // This would typically come from your auth/state management system
-  const donorData = {
-    name: "John Doe",
-    bloodType: "O+",
-    email: "john.doe@example.com",
-    phone: "+1 234 567 8900",
-    address: "123 Main St, City, State",
-    lastDonation: "2024-01-15",
-    totalDonations: 5,
-  };
+  const donorData = MOCK_USER;
 
   const calculateProgress = (lastDonationDate: string): number => {
     const lastDonation = new Date(lastDonationDate);

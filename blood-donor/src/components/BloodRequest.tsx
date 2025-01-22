@@ -1,117 +1,28 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { MagnifyingGlassIcon, FunnelIcon } from "@heroicons/react/24/outline";
 import RequestCard from "./cards/RequestCard";
+import { BLOOD_TYPES, URGENCY_OPTIONS } from "../data";
+import { useBloodRequest } from "../context/BloodRequestContext";
+import { IBloodRequest } from "../types";
+import LoadingSpinner from "./cards/LoadingSpinner";
+import { useNotification } from "../context/NotificationContext";
+import { useHttpClient } from "../hooks/useHttpClient";
 
-// Using the same requests data from BloodRequestSection
-const requests = [
-  {
-    type: "B+",
-    location: "New York, USA",
-    date: "13.02.2025",
-    urgency: "2 Days",
-    bagsNeeded: 3,
-  },
-  {
-    type: "A+",
-    location: "Los Angeles, USA",
-    date: "14.02.2025",
-    urgency: "3 Days",
-    bagsNeeded: 2,
-  },
-  {
-    type: "O-",
-    location: "Chicago, USA",
-    date: "15.02.2025",
-    urgency: "5 Days",
-    bagsNeeded: 1,
-  },
-  {
-    type: "AB+",
-    location: "Houston, USA",
-    date: "16.02.2025",
-    urgency: "7 Days",
-    bagsNeeded: 4,
-  },
-  {
-    type: "B-",
-    location: "Miami, USA",
-    date: "17.02.2025",
-    urgency: "10 Days",
-    bagsNeeded: 2,
-  },
-  {
-    type: "O+",
-    location: "Seattle, USA",
-    date: "18.02.2025",
-    urgency: "15 Days",
-    bagsNeeded: 3,
-  },
-  {
-    type: "A-",
-    location: "Boston, USA",
-    date: "19.02.2025",
-    urgency: "1 Days",
-    bagsNeeded: 2,
-  },
-  {
-    type: "AB-",
-    location: "Denver, USA",
-    date: "20.02.2025",
-    urgency: "6 Days",
-    bagsNeeded: 1,
-  },
-] as const;
-
-const bloodTypes = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"] as const;
-const urgencyOptions = ["3 Days", "7 Days", "15 Days"] as const;
-
-const BloodRequest = () => {
+const BloodRequestPage: React.FC = () => {
+  const { bloodRequests, getBloodRequests } = useBloodRequest();
+  const { showNotification } = useNotification();
+  const { isLoading, error, sendRequest } = useHttpClient();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedBloodType, setSelectedBloodType] = useState<string>("");
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [selectedUrgency, setSelectedUrgency] = useState<string>("");
   const [showFilters, setShowFilters] = useState(false);
   const [displayCount, setDisplayCount] = useState(6);
-  const [loading, setLoading] = useState(false);
+  const [filteredRequests, setFilteredRequests] = useState<IBloodRequest[]>([]);
 
   // Create ref for the loader element
   const loaderRef = React.useRef(null);
-
-  // Move filteredRequests before the useEffect
-  const filteredRequests = useMemo(() => {
-    return requests.filter((request) => {
-      const matchesSearch =
-        request.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        request.type.toLowerCase().includes(searchTerm.toLowerCase());
-
-      const matchesBloodType = selectedBloodType
-        ? request.type === selectedBloodType
-        : true;
-
-      const matchesDate = selectedDate ? request.date === selectedDate : true;
-
-      const matchesUrgency = selectedUrgency
-        ? (() => {
-            const requestDays = parseInt(request.urgency);
-            const selectedDays = parseInt(selectedUrgency);
-
-            switch (selectedDays) {
-              case 3:
-                return requestDays <= 3;
-              case 7:
-                return requestDays <= 7;
-              case 15:
-                return requestDays <= 15;
-              default:
-                return true;
-            }
-          })()
-        : true;
-
-      return matchesSearch && matchesBloodType && matchesDate && matchesUrgency;
-    });
-  }, [searchTerm, selectedBloodType, selectedDate, selectedUrgency]);
 
   // Set up intersection observer
   useEffect(() => {
@@ -120,17 +31,12 @@ const BloodRequest = () => {
         const target = entries[0];
         if (
           target.isIntersecting &&
-          !loading &&
+          !isLoading &&
           displayCount < filteredRequests.length
         ) {
-          setLoading(true);
-          // Simulate loading delay
-          setTimeout(() => {
-            setDisplayCount((prev) =>
-              Math.min(prev + 6, filteredRequests.length)
-            );
-            setLoading(false);
-          }, 500);
+          setDisplayCount((prev) =>
+            Math.min(prev + 6, filteredRequests.length)
+          );
         }
       },
       { threshold: 0.1 }
@@ -141,7 +47,51 @@ const BloodRequest = () => {
     }
 
     return () => observer.disconnect();
-  }, [loading, displayCount, filteredRequests.length]);
+  }, [isLoading, displayCount, filteredRequests.length]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        await getBloodRequests();
+      } catch (error) {
+        console.error("Error fetching blood requests:", error);
+        showNotification("error", "Failed to load blood requests");
+      }
+    };
+    fetchData();
+  }, [getBloodRequests, showNotification]);
+
+  useEffect(() => {
+    const filtered = bloodRequests.filter((request: IBloodRequest) => {
+      const matchesSearch =
+        request.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        request.bloodType.toLowerCase().includes(searchTerm.toLowerCase());
+
+      const matchesBloodType = selectedBloodType
+        ? request.bloodType === selectedBloodType
+        : true;
+
+      const matchesUrgency = selectedUrgency
+        ? (() => {
+            const requestDays = parseInt(request.urgency);
+            const selectedDays = parseInt(selectedUrgency);
+            return requestDays <= selectedDays;
+          })()
+        : true;
+
+      return matchesSearch && matchesBloodType && matchesUrgency;
+    });
+
+    setFilteredRequests(filtered);
+  }, [searchTerm, selectedBloodType, selectedUrgency, bloodRequests]);
+
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
+
+  if (error) {
+    return <div className="text-center text-red-600 py-8">{error}</div>;
+  }
 
   return (
     <div className="py-20 bg-gray-50">
@@ -207,7 +157,7 @@ const BloodRequest = () => {
                   className="w-full p-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500"
                 >
                   <option value="">All Blood Types</option>
-                  {bloodTypes.map((type) => (
+                  {BLOOD_TYPES.map((type) => (
                     <option key={type} value={type}>
                       {type}
                     </option>
@@ -221,11 +171,9 @@ const BloodRequest = () => {
                   className="w-full p-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-red-500"
                 >
                   <option value="">All Urgency Levels</option>
-                  {urgencyOptions.map((urgency) => (
-                    <option key={urgency} value={urgency.split(" ")[0]}>
-                      {urgency}
-                    </option>
-                  ))}
+                  <option value="3">Within 3 days</option>
+                  <option value="7">Within 7 days</option>
+                  <option value="15">Within 15 days</option>
                 </select>
               </div>
             </div>
@@ -245,29 +193,39 @@ const BloodRequest = () => {
               initial="hidden"
               animate="show"
             >
-              {filteredRequests.length > 0 ? (
+              {isLoading ? (
+                <LoadingSpinner />
+              ) : bloodRequests.length > 0 ? (
                 <>
-                  {filteredRequests
-                    .slice(0, displayCount)
-                    .map((request, index) => (
-                      <RequestCard key={index} {...request} index={index} />
-                    ))}
-                  {displayCount < filteredRequests.length && (
-                    <div
-                      ref={loaderRef}
-                      className="col-span-full flex justify-center py-4"
-                    >
-                      {loading ? (
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600" />
-                      ) : (
-                        <div className="h-8" /> // Invisible element to trigger intersection
+                  {filteredRequests.length > 0 ? (
+                    <>
+                      {filteredRequests
+                        .slice(0, displayCount)
+                        .map((request, index) => (
+                          <RequestCard key={index} {...request} index={index} />
+                        ))}
+                      {displayCount < filteredRequests.length && (
+                        <div
+                          ref={loaderRef}
+                          className="col-span-full flex justify-center py-4"
+                        >
+                          {isLoading ? (
+                            <LoadingSpinner />
+                          ) : (
+                            <div className="h-8" /> // Invisible element to trigger intersection
+                          )}
+                        </div>
                       )}
+                    </>
+                  ) : (
+                    <div className="col-span-full text-center py-12 text-gray-500">
+                      No blood requests match your search criteria.
                     </div>
                   )}
                 </>
               ) : (
                 <div className="col-span-full text-center py-12 text-gray-500">
-                  No blood requests match your search criteria.
+                  No blood requests found.
                 </div>
               )}
             </motion.div>
@@ -278,4 +236,4 @@ const BloodRequest = () => {
   );
 };
 
-export default BloodRequest;
+export default BloodRequestPage;

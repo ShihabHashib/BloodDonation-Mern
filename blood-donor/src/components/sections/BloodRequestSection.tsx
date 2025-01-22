@@ -1,67 +1,32 @@
-import React from "react";
 import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
 import RequestCard from "../cards/RequestCard";
-
-const requests = [
-  {
-    type: "B+",
-    location: "New York, USA",
-    date: "13.02.2025",
-    urgency: "2 Days",
-    bagsNeeded: 3,
-  },
-  {
-    type: "A+",
-    location: "Los Angeles, USA",
-    date: "14.02.2025",
-    urgency: "3 Days",
-    bagsNeeded: 2,
-  },
-  {
-    type: "O-",
-    location: "Chicago, USA",
-    date: "15.02.2025",
-    urgency: "5 Days",
-    bagsNeeded: 1,
-  },
-  {
-    type: "AB+",
-    location: "Houston, USA",
-    date: "16.02.2025",
-    urgency: "7 Days",
-    bagsNeeded: 4,
-  },
-  {
-    type: "B-",
-    location: "Miami, USA",
-    date: "17.02.2025",
-    urgency: "10 Days",
-    bagsNeeded: 2,
-  },
-  {
-    type: "O+",
-    location: "Seattle, USA",
-    date: "18.02.2025",
-    urgency: "15 Days",
-    bagsNeeded: 3,
-  },
-  {
-    type: "A-",
-    location: "Boston, USA",
-    date: "19.02.2025",
-    urgency: "1 Days",
-    bagsNeeded: 2,
-  },
-  {
-    type: "AB-",
-    location: "Denver, USA",
-    date: "20.02.2025",
-    urgency: "6 Days",
-    bagsNeeded: 1,
-  },
-] as const;
+import { IBloodRequest } from "../../types";
+import { useBloodRequest } from "../../context/BloodRequestContext";
+import LoadingSpinner from "../cards/LoadingSpinner";
 
 const BloodRequestSection = () => {
+  const { bloodRequests, getBloodRequests } = useBloodRequest();
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchRequests = async () => {
+      try {
+        await getBloodRequests();
+      } catch (error) {
+        console.error("Error fetching blood requests:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRequests();
+  }, [getBloodRequests]);
+
+  if (loading) {
+    return <LoadingSpinner />;
+  }
+
   return (
     <div className="py-16 bg-white">
       <div className="container mx-auto px-4">
@@ -70,7 +35,7 @@ const BloodRequestSection = () => {
           animate={{ opacity: 1, y: 0 }}
           className="text-3xl font-bold mb-8"
         >
-          Current Blood Request
+          Current Blood Requests
         </motion.h2>
         <motion.div
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
@@ -84,8 +49,8 @@ const BloodRequestSection = () => {
           initial="hidden"
           animate="show"
         >
-          {requests.slice(0, 8).map((request, index) => (
-            <RequestCard key={index} {...request} index={index} />
+          {bloodRequests.slice(0, 8).map((request: IBloodRequest) => (
+            <RequestCard key={request._id} {...request} />
           ))}
         </motion.div>
       </div>

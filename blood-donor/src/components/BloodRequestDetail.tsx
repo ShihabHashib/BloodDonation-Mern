@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import {
   MapPinIcon,
@@ -9,28 +9,73 @@ import {
   UserIcon,
   BuildingOffice2Icon,
 } from "@heroicons/react/24/outline";
-
-// This would typically come from an API
-const mockRequest = {
-  id: "1",
-  type: "B+",
-  location: "New York Presbyterian Hospital",
-  date: "13.02.2025",
-  urgency: "2 Days",
-  bagsNeeded: 3,
-  patientName: "John Doe",
-  contactNumber: "+1 (555) 123-4567",
-  alternateContact: "+1 (555) 987-6543",
-  hospitalAddress: "525 E 68th St, New York, NY 10065",
-  additionalNotes:
-    "Patient needs blood for scheduled surgery. Critical requirement.",
-  postedBy: "Dr. Sarah Wilson",
-};
+import { IBloodRequest } from "../types";
+import { useHttpClient } from "../hooks/useHttpClient";
+import LoadingSpinner from "./cards/LoadingSpinner";
+import { API_ENDPOINTS } from "../config/api";
 
 const BloodRequestDetail = () => {
-  const { id } = useParams();
-  // In a real app, you would fetch the request details using the id
-  const request = mockRequest;
+  const { requestId } = useParams<{ requestId: string }>();
+  const { isLoading, error, sendRequest } = useHttpClient();
+  const [request, setRequest] = useState<IBloodRequest | null>(null);
+  const [debugInfo, setDebugInfo] = useState<string>("");
+
+  useEffect(() => {
+    const fetchRequest = async () => {
+      if (!requestId) {
+        setDebugInfo("No request ID provided");
+        return;
+      }
+
+      try {
+        const responseData = await sendRequest(
+          `${API_ENDPOINTS.BLOOD_REQUESTS}/${requestId}`
+        );
+        if (responseData) {
+          setRequest(responseData);
+        }
+      } catch (err) {
+        setDebugInfo(JSON.stringify(err, null, 2));
+      }
+    };
+
+    fetchRequest();
+  }, [sendRequest, requestId]);
+
+  if (!requestId) {
+    return (
+      <div className="py-20 text-center">
+        <div className="text-red-600 mb-4">Invalid request: No ID provided</div>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
+
+  if (error) {
+    return (
+      <div className="py-20 text-center">
+        <div className="text-red-600 mb-4">{error}</div>
+        <div className="text-sm text-gray-600">Request ID: {requestId}</div>
+        {debugInfo && (
+          <pre className="mt-4 text-left bg-gray-100 p-4 rounded">
+            {debugInfo}
+          </pre>
+        )}
+      </div>
+    );
+  }
+
+  if (!request) {
+    return (
+      <div className="py-20 text-center">
+        <div className="text-gray-600 mb-4">Blood request not found.</div>
+        <div className="text-sm text-gray-500">Request ID: {requestId}</div>
+      </div>
+    );
+  }
 
   return (
     <div className="py-20 bg-gray-50">
@@ -41,11 +86,11 @@ const BloodRequestDetail = () => {
             <div className="flex items-center gap-2">
               <ClockIcon className="w-5 h-5 text-red-600" />
               <span className="text-red-600 font-medium">
-                Urgent: Need within {request.urgency}
+                Need within {request.urgency} days
               </span>
             </div>
             <span className="text-sm text-gray-500">
-              Posted on {request.date}
+              Request ID: {request.requestId}
             </span>
           </div>
 
@@ -55,11 +100,9 @@ const BloodRequestDetail = () => {
             <div className="flex items-center justify-between mb-8 pb-8 border-b">
               <div>
                 <h1 className="text-4xl font-bold text-red-600 mb-2">
-                  {request.type}
+                  {request.bloodType}
                 </h1>
-                <p className="text-gray-600">
-                  {request.bagsNeeded} units needed
-                </p>
+                <p className="text-gray-600">{request.units} units needed</p>
               </div>
               <button className="bg-red-600 text-white px-8 py-3 hover:bg-red-700 transition-colors">
                 Contact Now
@@ -77,11 +120,11 @@ const BloodRequestDetail = () => {
                   <div className="space-y-3">
                     <div className="flex items-center gap-3 text-gray-600">
                       <BuildingOffice2Icon className="w-5 h-5 text-gray-400" />
-                      <span>{request.location}</span>
+                      <span>{request.hospital}</span>
                     </div>
                     <div className="flex items-center gap-3 text-gray-600">
                       <MapPinIcon className="w-5 h-5 text-gray-400" />
-                      <span>{request.hospitalAddress}</span>
+                      <span>{request.location}</span>
                     </div>
                   </div>
                 </div>
@@ -99,12 +142,18 @@ const BloodRequestDetail = () => {
                       <PhoneIcon className="w-5 h-5 text-gray-400" />
                       <span>{request.contactNumber}</span>
                     </div>
-                    <div className="flex items-center gap-3 text-gray-600">
-                      <PhoneIcon className="w-5 h-5 text-gray-400" />
-                      <span>{request.alternateContact}</span>
-                    </div>
                   </div>
                 </div>
+                {request.additionalNotes && (
+                  <div>
+                    <h2 className="font-semibold text-gray-900 mb-4">
+                      Additional Notes
+                    </h2>
+                    <p className="text-gray-600 whitespace-pre-wrap">
+                      {request.additionalNotes}
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* Right Column */}
@@ -117,21 +166,17 @@ const BloodRequestDetail = () => {
                     <div className="flex items-center gap-3 text-gray-600">
                       <BeakerIcon className="w-5 h-5 text-gray-400" />
                       <span>
-                        {request.bagsNeeded} units of {request.type} blood
+                        {request.units} units of {request.bloodType} blood
                       </span>
                     </div>
                     <div className="flex items-center gap-3 text-gray-600">
                       <CalendarIcon className="w-5 h-5 text-gray-400" />
-                      <span>Need by: {request.urgency}</span>
+                      <span>
+                        Posted:{" "}
+                        {new Date(request.createdAt).toLocaleDateString()}
+                      </span>
                     </div>
                   </div>
-                </div>
-
-                <div>
-                  <h2 className="font-semibold text-gray-900 mb-4">
-                    Additional Notes
-                  </h2>
-                  <p className="text-gray-600">{request.additionalNotes}</p>
                 </div>
 
                 <div>
@@ -139,6 +184,13 @@ const BloodRequestDetail = () => {
                     Posted By
                   </h2>
                   <p className="text-gray-600">{request.postedBy}</p>
+                </div>
+
+                <div>
+                  <h2 className="font-semibold text-gray-900 mb-4">Status</h2>
+                  <span className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium capitalize">
+                    {request.status}
+                  </span>
                 </div>
               </div>
             </div>

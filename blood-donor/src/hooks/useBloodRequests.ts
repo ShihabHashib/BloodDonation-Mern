@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { BLOOD_REQUEST_MOCK_DATA } from '../data';
 
 interface BloodRequest {
     id: string;
@@ -7,6 +8,12 @@ interface BloodRequest {
     date: string;
     urgency: string;
     bagsNeeded: number;
+    patientName: string;
+    contactNumber: string;
+    hospitalAddress: string;
+    additionalNotes: string;
+    postedBy: string;
+    status: string;
 }
 
 export const useBloodRequests = () => {
@@ -14,14 +21,16 @@ export const useBloodRequests = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
+    // Simulate API call with mock data
     const fetchRequests = async () => {
         setLoading(true);
         try {
-            const response = await fetch('/api/blood-requests');
-            const data = await response.json();
-            setRequests(data);
-        } catch (err) {
+            // Simulate network delay
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            setRequests(BLOOD_REQUEST_MOCK_DATA as unknown as BloodRequest[]);
+        } catch (error) {
             setError('Failed to fetch blood requests');
+            console.error(error);
         } finally {
             setLoading(false);
         }

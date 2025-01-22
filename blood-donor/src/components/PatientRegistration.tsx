@@ -1,19 +1,38 @@
 import React, { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { API_ENDPOINTS } from "../config/api";
+import { useNotification } from "../context/NotificationContext";
+
+const patientSchema = z.object({
+  fullName: z.string().min(2, "Full name must be at least 2 characters"),
+  bloodType: z.enum(["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"], {
+    errorMap: () => ({ message: "Please select a valid blood type" }),
+  }),
+  hospital: z.string().min(3, "Address must be at least 3 characters"),
+  mobile: z.string().min(10, "Mobile number must be at least 10 digits"),
+  alternateContact: z.string().optional(),
+  requiredUnits: z.number().min(1).max(10, "Maximum 10 units allowed"),
+  urgencyLevel: z.string().min(1, "Please select a date"),
+  hospitalAddress: z.string().min(10, "Hospital address must be detailed"),
+  additionalNotes: z.string().optional(),
+  postedBy: z.string().min(2, "Name must be at least 2 characters"),
+});
+
+type PatientFormData = z.infer<typeof patientSchema>;
 
 const PatientRegistration = () => {
-  const [patientForm, setPatientForm] = useState({
-    fullName: "",
-    bloodType: "",
-    urgencyLevel: "",
-    hospital: "",
-    requiredUnits: 0,
-    mobile: "",
-    alternateContact: "",
-    hospitalAddress: "",
-    additionalNotes: "",
-    postedBy: "",
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<PatientFormData>({
+    resolver: zodResolver(patientSchema),
   });
 
+  const { showNotification } = useNotification();
   const [captcha, setCaptcha] = useState({
     num1: Math.floor(Math.random() * 10),
     num2: Math.floor(Math.random() * 10),
@@ -29,40 +48,42 @@ const PatientRegistration = () => {
     });
   };
 
-  const handlePatientSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
+  const onSubmit = async (data: PatientFormData) => {
     // Verify captcha
     if (parseInt(captcha.userAnswer) !== captcha.num1 + captcha.num2) {
-      alert("Incorrect CAPTCHA answer. Please try again.");
+      showNotification("error", "Incorrect CAPTCHA answer. Please try again.");
       generateNewCaptcha();
       return;
     }
 
     try {
-      // Simulating API call with mock response
-      console.log("Patient registration data:", patientForm);
-
-      // Simulate successful registration
-      alert("Patient registered successfully!");
-      setPatientForm({
-        fullName: "",
-        bloodType: "",
-        urgencyLevel: "",
-        hospital: "",
-        requiredUnits: 0,
-        mobile: "",
-        alternateContact: "",
-        hospitalAddress: "",
-        additionalNotes: "",
-        postedBy: "",
+      const response = await fetch(API_ENDPOINTS.PATIENTS.REGISTER, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(data),
       });
 
-      // After successful submission, generate new captcha
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to register patient");
+      }
+
+      const result = await response.json();
+      showNotification(
+        "success",
+        result.message || "Blood request created successfully!"
+      );
+      reset();
       generateNewCaptcha();
     } catch (error) {
       console.error("Error registering patient:", error);
-      alert("Error registering patient");
+      showNotification(
+        "error",
+        error instanceof Error ? error.message : "Error registering patient"
+      );
     }
   };
 
@@ -73,28 +94,25 @@ const PatientRegistration = () => {
           <h3 className="text-2xl font-semibold mb-6">
             Blood Request Registration
           </h3>
-          <form onSubmit={handlePatientSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div>
               <label className="block text-gray-700 mb-2">Patient Name</label>
               <input
                 type="text"
                 className="w-full p-2 border focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                value={patientForm.fullName}
-                onChange={(e) =>
-                  setPatientForm({ ...patientForm, fullName: e.target.value })
-                }
-                required
+                {...register("fullName")}
               />
+              {errors.fullName && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.fullName.message}
+                </p>
+              )}
             </div>
             <div>
               <label className="block text-gray-700 mb-2">Blood Type</label>
               <select
                 className="w-full p-2 border focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                value={patientForm.bloodType}
-                onChange={(e) =>
-                  setPatientForm({ ...patientForm, bloodType: e.target.value })
-                }
-                required
+                {...register("bloodType")}
               >
                 <option value="">Select Blood Type</option>
                 <option value="A+">A+</option>
@@ -106,32 +124,39 @@ const PatientRegistration = () => {
                 <option value="O+">O+</option>
                 <option value="O-">O-</option>
               </select>
+              {errors.bloodType && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.bloodType.message}
+                </p>
+              )}
             </div>
             <div>
               <label className="block text-gray-700 mb-2">Address</label>
               <input
                 type="text"
                 className="w-full p-2 border focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                value={patientForm.hospital}
-                onChange={(e) =>
-                  setPatientForm({ ...patientForm, hospital: e.target.value })
-                }
                 placeholder="Location here"
-                required
+                {...register("hospital")}
               />
+              {errors.hospital && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.hospital.message}
+                </p>
+              )}
             </div>
             <div>
               <label className="block text-gray-700 mb-2">Mobile Number</label>
               <input
                 type="tel"
                 className="w-full p-2 border focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                value={patientForm.mobile}
-                onChange={(e) =>
-                  setPatientForm({ ...patientForm, mobile: e.target.value })
-                }
                 placeholder="Enter patient's or attendant's mobile number"
-                required
+                {...register("mobile")}
               />
+              {errors.mobile && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.mobile.message}
+                </p>
+              )}
             </div>
             <div>
               <label className="block text-gray-700 mb-2">
@@ -140,32 +165,29 @@ const PatientRegistration = () => {
               <input
                 type="tel"
                 className="w-full p-2 border focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                value={patientForm.alternateContact}
-                onChange={(e) =>
-                  setPatientForm({
-                    ...patientForm,
-                    alternateContact: e.target.value,
-                  })
-                }
                 placeholder="Emergency contact number"
+                {...register("alternateContact")}
               />
+              {errors.alternateContact && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.alternateContact.message}
+                </p>
+              )}
             </div>
             <div>
               <label className="block text-gray-700 mb-2">Required Units</label>
               <input
                 type="number"
                 className="w-full p-2 border focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                value={patientForm.requiredUnits}
-                onChange={(e) =>
-                  setPatientForm({
-                    ...patientForm,
-                    requiredUnits: parseInt(e.target.value),
-                  })
-                }
                 min="1"
                 max="10"
-                required
+                {...register("requiredUnits", { valueAsNumber: true })}
               />
+              {errors.requiredUnits && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.requiredUnits.message}
+                </p>
+              )}
             </div>
             <div>
               <label className="block text-gray-700 mb-2">
@@ -174,21 +196,19 @@ const PatientRegistration = () => {
               <input
                 type="date"
                 className="w-full p-2 border focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                value={patientForm.urgencyLevel}
-                onChange={(e) =>
-                  setPatientForm({
-                    ...patientForm,
-                    urgencyLevel: e.target.value,
-                  })
-                }
                 min={new Date().toISOString().split("T")[0]}
                 max={
                   new Date(Date.now() + 15 * 24 * 60 * 60 * 1000)
                     .toISOString()
                     .split("T")[0]
                 }
-                required
+                {...register("urgencyLevel")}
               />
+              {errors.urgencyLevel && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.urgencyLevel.message}
+                </p>
+              )}
             </div>
             <div>
               <label className="block text-gray-700 mb-2">
@@ -196,16 +216,14 @@ const PatientRegistration = () => {
               </label>
               <textarea
                 className="w-full p-2 border focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                value={patientForm.hospitalAddress}
-                onChange={(e) =>
-                  setPatientForm({
-                    ...patientForm,
-                    hospitalAddress: e.target.value,
-                  })
-                }
                 placeholder="Enter complete hospital address"
-                required
+                {...register("hospitalAddress")}
               />
+              {errors.hospitalAddress && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.hospitalAddress.message}
+                </p>
+              )}
             </div>
             <div>
               <label className="block text-gray-700 mb-2">
@@ -213,29 +231,29 @@ const PatientRegistration = () => {
               </label>
               <textarea
                 className="w-full p-2 border focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                value={patientForm.additionalNotes}
-                onChange={(e) =>
-                  setPatientForm({
-                    ...patientForm,
-                    additionalNotes: e.target.value,
-                  })
-                }
                 placeholder="Enter any additional information or special requirements"
                 rows={3}
+                {...register("additionalNotes")}
               />
+              {errors.additionalNotes && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.additionalNotes.message}
+                </p>
+              )}
             </div>
             <div>
               <label className="block text-gray-700 mb-2">Posted By</label>
               <input
                 type="text"
                 className="w-full p-2 border focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                value={patientForm.postedBy}
-                onChange={(e) =>
-                  setPatientForm({ ...patientForm, postedBy: e.target.value })
-                }
                 placeholder="Enter your name or designation"
-                required
+                {...register("postedBy")}
               />
+              {errors.postedBy && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.postedBy.message}
+                </p>
+              )}
             </div>
             <div>
               <label className="block text-gray-700 mb-2">

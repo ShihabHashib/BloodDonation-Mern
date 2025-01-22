@@ -1,14 +1,28 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useNotification } from "./NotificationContext";
 
+// Define proper types for the context
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  bloodType?: string;
+}
+
+interface LoginCredentials {
+  email: string;
+  password: string;
+}
+
 interface AuthContextType {
   isLoggedIn: boolean;
   userType: "donor" | "patient" | null;
-  user: any | null;
-  login: (credentials: any) => Promise<void>;
+  user: User | null;
+  login: (credentials: LoginCredentials) => Promise<void>;
   logout: () => void;
 }
 
+// Create context with proper type
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
@@ -17,9 +31,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const { showNotification } = useNotification();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userType, setUserType] = useState<"donor" | "patient" | null>(null);
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<User | null>(null);
 
-  const login = async (credentials: any) => {
+  const login = async (credentials: LoginCredentials) => {
     try {
       const response = await fetch("/api/login", {
         method: "POST",
@@ -59,8 +73,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     // Check for existing token on app load
     const token = localStorage.getItem("token");
     if (token) {
-      // Validate token and set user state
-      // You would typically make an API call here
+      // Here you would typically validate the token with your backend
+      // For now, we'll just simulate a check
+      const validateToken = async () => {
+        try {
+          const response = await fetch("/api/validate-token", {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            setUser(data.user);
+            setUserType(data.userType);
+            setIsLoggedIn(true);
+          } else {
+            // If token is invalid, clear it
+            localStorage.removeItem("token");
+          }
+        } catch (error) {
+          console.error("Error validating token:", error);
+          localStorage.removeItem("token");
+        }
+      };
+
+      validateToken();
     }
   }, []);
 
