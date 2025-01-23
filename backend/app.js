@@ -11,6 +11,7 @@ const donorsRoutes = require("./routes/doners-routes");
 const patientsRoutes = require("./routes/patients-routes");
 const events = require("events");
 const subscriptionRoutes = require("./routes/subscription-routes");
+const contactRoutes = require("./routes/contact-routes");
 
 // Increase EventEmitter max listeners
 events.EventEmitter.defaultMaxListeners = 15;
@@ -50,6 +51,7 @@ app.use("/api/blood-requests", bloodRequestsRoutes);
 app.use("/api/patients", patientsRoutes);
 app.use("/api/donors", donorsRoutes);
 app.use("/api/subscriptions", subscriptionRoutes);
+app.use("/api/contact", contactRoutes);
 // Enhanced error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);

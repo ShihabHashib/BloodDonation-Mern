@@ -1,67 +1,106 @@
-const Contact = require("../models/Contact");
-const nodemailer = require("nodemailer");
+const sgMail = require("@sendgrid/mail");
 
-// Configure nodemailer with your Gmail
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_APP_PASSWORD, // Use App Password from Gmail
-  },
-});
+// Move this to the top to catch any initialization errors
+try {
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+} catch (error) {
+  console.error("SendGrid initialization error:", error);
+}
 
-const submitContact = async (req, res) => {
+const sendContactEmail = async (req, res) => {
   try {
+    // Validate environment variables
+    if (
+      !process.env.SENDGRID_API_KEY ||
+      !process.env.SENDGRID_VERIFIED_SENDER ||
+      !process.env.ADMIN_EMAIL
+    ) {
+      throw new Error("Missing required environment variables");
+    }
+
     const { name, email, subject, message } = req.body;
 
-    // Save to MongoDB
-    const contact = new Contact({
-      name,
-      email,
-      subject,
-      message,
-    });
-    await contact.save();
+    // Validate required fields
+    if (!name || !email || !subject || !message) {
+      return res.status(400).json({
+        success: false,
+        message: "All fields are required",
+      });
+    }
 
-    // Send email notification to your Gmail
-    await transporter.sendMail({
-      from: process.env.GMAIL_USER,
-      to: process.env.GMAIL_USER, // Your Gmail address
-      subject: `New Contact Form Submission: ${subject}`,
+    // First try sending to admin
+    const msg = {
+      to: process.env.ADMIN_EMAIL,
+      from: process.env.SENDGRID_VERIFIED_SENDER,
+      subject: `Contact Form: ${subject}`,
+      text: `Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`,
       html: `
-        <h2>New Contact Form Submission</h2>
-        <p><strong>From:</strong> ${name} (${email})</p>
+        <h3>New Contact Form Submission</h3>
+        <p><strong>Name:</strong> ${name}</p>
+        <p><strong>Email:</strong> ${email}</p>
         <p><strong>Subject:</strong> ${subject}</p>
+        <br/>
         <p><strong>Message:</strong></p>
         <p>${message}</p>
       `,
-    });
+    };
 
-    // Send confirmation email to user
-    await transporter.sendMail({
-      from: process.env.GMAIL_USER,
-      to: email,
-      subject: "Thank you for contacting us",
-      html: `
-        <h2>Thank you for contacting Blood Donor</h2>
-        <p>Dear ${name},</p>
-        <p>We have received your message and will get back to you soon.</p>
-        <p>Your message details:</p>
-        <p><strong>Subject:</strong> ${subject}</p>
-        <p><strong>Message:</strong></p>
-        <p>${message}</p>
-      `,
-    });
+    try {
+      console.log("Attempting to send admin notification...");
+      const [response] = await sgMail.send(msg);
+      console.log("Admin notification sent:", response.statusCode);
 
-    res.status(201).json({ message: "Message sent successfully" });
+      // Only send confirmation if admin notification succeeds
+      const confirmationMsg = {
+        to: email,
+        from: process.env.SENDGRID_VERIFIED_SENDER,
+        subject: "We've Received Your Message",
+        text: `Dear ${name},\n\nThank you for contacting us. We have received your message and will get back to you soon.\n\nBest regards,\nBlood Donor Team`,
+        html: `
+          <h3>Thank you for contacting us</h3>
+          <p>Dear ${name},</p>
+          <p>We have received your message and will get back to you soon.</p>
+          <br/>
+          <p>Best regards,</p>
+          <p>Blood Donor Team</p>
+        `,
+      };
+
+      console.log("Attempting to send confirmation...");
+      const [confirmResponse] = await sgMail.send(confirmationMsg);
+      console.log("Confirmation sent:", confirmResponse.statusCode);
+
+      res.status(200).json({
+        success: true,
+        message: "Your message has been sent successfully!",
+      });
+    } catch (sendError) {
+      console.error("SendGrid send error:", sendError);
+      if (sendError.response) {
+        console.error(sendError.response.body);
+        // Check if it's a verification error
+        const errors = sendError.response.body.errors || [];
+        const isVerificationError = errors.some((error) =>
+          error.message.includes("verify")
+        );
+        if (isVerificationError) {
+          throw new Error(
+            "Sender email not verified. Please verify your email address first."
+          );
+        }
+      }
+      throw new Error(sendError.message || "Failed to send email");
+    }
   } catch (error) {
-    console.error("Contact submission error:", error);
-    res
-      .status(500)
-      .json({ message: "Failed to send message", error: error.message });
+    console.error("Contact Form Error:", error);
+    res.status(500).json({
+      success: false,
+      message:
+        error.message || "Failed to send message. Please try again later.",
+    });
   }
 };
 
 module.exports = {
-  submitContact,
+  sendContactEmail,
 };

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   PhoneIcon,
@@ -9,6 +10,7 @@ import { CONTACT_INFO } from "../data";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { API_ENDPOINTS } from "../config/apiEndpoints";
 
 // Add form schema
 const contactFormSchema = z.object({
@@ -21,17 +23,56 @@ const contactFormSchema = z.object({
 type ContactFormData = z.infer<typeof contactFormSchema>;
 
 const Contact = () => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<{
+    type: "success" | "error" | null;
+    message: string | null;
+  }>({ type: null, message: null });
+
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm<ContactFormData>({
     resolver: zodResolver(contactFormSchema),
   });
 
-  const onSubmit = (data: ContactFormData) => {
-    console.log(data);
-    // Handle form submission here
+  const onSubmit = async (data: ContactFormData) => {
+    setIsSubmitting(true);
+    setSubmitStatus({ type: null, message: null });
+
+    try {
+      const response = await fetch(API_ENDPOINTS.CONTACT.SUBMIT, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || "Failed to send message");
+      }
+
+      setSubmitStatus({
+        type: "success",
+        message: "Message sent successfully! We'll get back to you soon.",
+      });
+      reset(); // Clear the form
+    } catch (error) {
+      setSubmitStatus({
+        type: "error",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Failed to send message. Please try again later.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -96,6 +137,19 @@ const Contact = () => {
           <h2 className="text-3xl font-bold mb-6 text-center">
             Send us a Message
           </h2>
+
+          {submitStatus.message && (
+            <div
+              className={`mb-6 p-4 rounded-md ${
+                submitStatus.type === "success"
+                  ? "bg-green-50 text-green-800"
+                  : "bg-red-50 text-red-800"
+              }`}
+            >
+              {submitStatus.message}
+            </div>
+          )}
+
           <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
@@ -171,9 +225,12 @@ const Contact = () => {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               type="submit"
-              className="w-full bg-red-600 text-white py-3 rounded-md hover:bg-red-700 transition-colors duration-300"
+              disabled={isSubmitting}
+              className={`w-full bg-red-600 text-white py-3 rounded-md hover:bg-red-700 transition-colors duration-300 ${
+                isSubmitting ? "opacity-70 cursor-not-allowed" : ""
+              }`}
             >
-              Send Message
+              {isSubmitting ? "Sending..." : "Send Message"}
             </motion.button>
           </form>
         </motion.div>
