@@ -109,26 +109,32 @@ const getDonorProfile = async (req, res) => {
 const updateDonorProfile = async (req, res) => {
   try {
     const donorId = req.params.id;
-    const updates = req.body;
+    const { donor } = req.body; // Extract donor data from request body
 
-    // Remove password from updates if present
-    delete updates.password;
-
-    const donor = await Donor.findByIdAndUpdate(
-      donorId,
-      { $set: updates },
-      { new: true, runValidators: true }
-    ).select("-password");
-
-    if (!donor) {
+    // Find donor and update
+    const existingDonor = await Donor.findById(donorId);
+    if (!existingDonor) {
       return res.status(404).json({ message: "Donor not found" });
     }
 
-    res.json(donor);
+    // Update fields if provided
+    if (donor.fullName) existingDonor.fullName = donor.fullName;
+    if (donor.email) existingDonor.email = donor.email;
+    if (donor.bloodType) existingDonor.bloodType = donor.bloodType;
+    if (donor.phone) existingDonor.phone = donor.phone;
+    if (donor.address) existingDonor.address = donor.address;
+
+    await existingDonor.save();
+
+    // Return updated donor without password
+    const updatedDonor = await Donor.findById(donorId).select("-password");
+    res.json(updatedDonor);
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error updating profile", error: error.message });
+    console.error("Profile update error:", error);
+    res.status(500).json({
+      message: "Error updating profile",
+      error: error.message,
+    });
   }
 };
 

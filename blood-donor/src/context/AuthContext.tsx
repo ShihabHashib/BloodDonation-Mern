@@ -33,39 +33,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   });
 
   const login = async (credentials: LoginCredentials) => {
-    try {
-      const response = await fetch(API_ENDPOINTS.DONORS.LOGIN, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(credentials),
-      });
+    const response = await fetch(API_ENDPOINTS.DONORS.LOGIN, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(credentials),
+    });
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Login failed");
-      }
-
-      const data = await response.json();
-      console.log("Login response:", data);
-
-      const userData: AuthUser = {
-        id: data.donor.id,
-        fullName: data.donor.fullName,
-        email: data.donor.email,
-        token: data.token,
-        type: "donor",
-      };
-
-      localStorage.setItem("user", JSON.stringify(userData));
-      setUser(userData);
-      setIsAuthenticated(true);
-      setUserType("donor");
-    } catch (error) {
-      console.error("Login error:", error);
-      throw error;
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || "Login failed");
     }
+
+    const data = await response.json();
+    console.log("Login response:", data);
+
+    const userData: AuthUser = {
+      id: data.donor.id,
+      fullName: data.donor.fullName,
+      email: data.donor.email,
+      token: data.token,
+      type: data.donor.donorType || data.donor.type || "donor",
+    };
+
+    // Store user data
+    localStorage.setItem("user", JSON.stringify(userData));
+    setUser(userData);
+    setIsAuthenticated(true);
+    setUserType(userData.type);
   };
 
   const logout = () => {
