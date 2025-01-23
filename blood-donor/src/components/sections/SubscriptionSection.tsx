@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
+import { Subscription, BloodType } from "../../types";
+import { API_ENDPOINTS } from "../../config/apiEndpoints";
 
 interface SubscriptionForm {
   email: string;
@@ -15,13 +17,40 @@ const SubscriptionSection = () => {
     bloodType: "",
   });
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement API call to save subscription
-    setIsSubmitted(true);
-    setTimeout(() => setIsSubmitted(false), 3000);
-    setFormData({ email: "", bloodType: "" });
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch(API_ENDPOINTS.SUBSCRIPTIONS.CREATE, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          bloodType: formData.bloodType,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to subscribe");
+      }
+
+      setIsSubmitted(true);
+      setFormData({ email: "", bloodType: "" });
+      setTimeout(() => setIsSubmitted(false), 3000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -93,12 +122,21 @@ const SubscriptionSection = () => {
 
                 <button
                   type="submit"
-                  className="bg-gradient-to-r from-red-600 to-red-700 text-white px-10 py-4 hover:from-red-700 hover:to-red-800 transition-all duration-300 w-full md:w-auto text-lg font-semibold shadow-lg hover:shadow-xl active:scale-95"
+                  disabled={isLoading}
+                  className={`bg-gradient-to-r from-red-600 to-red-700 text-white px-10 py-4 hover:from-red-700 hover:to-red-800 transition-all duration-300 w-full md:w-auto text-lg font-semibold shadow-lg hover:shadow-xl active:scale-95 ${
+                    isLoading ? "opacity-70 cursor-not-allowed" : ""
+                  }`}
                 >
-                  Subscribe
+                  {isLoading ? "Subscribing..." : "Subscribe"}
                 </button>
               </div>
             </form>
+
+            {error && (
+              <div className="mt-6 text-red-600 bg-red-50 p-4 rounded-xl text-center font-medium">
+                {error}
+              </div>
+            )}
 
             {isSubmitted && (
               <div className="mt-6 text-green-600 bg-green-50 p-4 rounded-xl text-center font-medium">

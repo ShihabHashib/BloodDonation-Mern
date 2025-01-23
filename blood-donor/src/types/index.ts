@@ -137,4 +137,18 @@ export interface Donor {
         location: string;
         notes?: string;
     }>;
+}
+
+export interface Subscription {
+    id?: string;
+    email: string;
+    bloodType: BloodType;
+    createdAt?: string;
+    status?: 'active' | 'unsubscribed';
+}
+
+export interface SubscriptionResponse {
+    success: boolean;
+    message: string;
+    subscription?: Subscription;
 } 

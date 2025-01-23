@@ -10,6 +10,7 @@ const bloodRequestsRoutes = require("./routes/bloodRequests-routes");
 const donorsRoutes = require("./routes/doners-routes");
 const patientsRoutes = require("./routes/patients-routes");
 const events = require("events");
+const subscriptionRoutes = require("./routes/subscription-routes");
 
 // Increase EventEmitter max listeners
 events.EventEmitter.defaultMaxListeners = 15;
@@ -48,6 +49,7 @@ function haltOnTimedout(req, res, next) {
 app.use("/api/blood-requests", bloodRequestsRoutes);
 app.use("/api/patients", patientsRoutes);
 app.use("/api/donors", donorsRoutes);
+app.use("/api/subscriptions", subscriptionRoutes);
 // Enhanced error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
