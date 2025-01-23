@@ -7,6 +7,8 @@ const helmet = require("helmet");
 const timeout = require("connect-timeout");
 const connectDB = require("./config/database");
 const bloodRequestsRoutes = require("./routes/bloodRequests-routes");
+const donorsRoutes = require("./routes/doners-routes");
+const patientsRoutes = require("./routes/patients-routes");
 const events = require("events");
 
 // Increase EventEmitter max listeners
@@ -26,7 +28,7 @@ app.use(
       "http://localhost:5173",
       process.env.FRONTEND_URL,
     ],
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
     credentials: true,
   })
@@ -44,8 +46,8 @@ function haltOnTimedout(req, res, next) {
 
 // Routes
 app.use("/api/blood-requests", bloodRequestsRoutes);
-app.use("/api/patients", require("./routes/patients-routes"));
-
+app.use("/api/patients", patientsRoutes);
+app.use("/api/donors", donorsRoutes);
 // Enhanced error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);

@@ -21,7 +21,7 @@ import ScheduleDonation from "./components/ScheduleDonation";
 import { AuthProvider } from "./context/AuthContext";
 import { NotificationProvider } from "./context/NotificationContext";
 import { BloodRequestProvider } from "./context/BloodRequestContext";
-import ProtectedRoute from "./components/ProtectedRoute";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
 
 function App() {
   return (
@@ -57,7 +57,7 @@ function App() {
                 <Route
                   path="/donor-profile"
                   element={
-                    <ProtectedRoute requiredUserType="donor">
+                    <ProtectedRoute>
                       <DonorProfile />
                     </ProtectedRoute>
                   }

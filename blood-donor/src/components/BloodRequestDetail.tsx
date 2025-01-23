@@ -12,7 +12,7 @@ import {
 import { IBloodRequest } from "../types";
 import { useHttpClient } from "../hooks/useHttpClient";
 import LoadingSpinner from "./cards/LoadingSpinner";
-import { API_ENDPOINTS } from "../config/api";
+import { API_ENDPOINTS } from "../config/apiEndpoints";
 
 const BloodRequestDetail = () => {
   const { requestId } = useParams<{ requestId: string }>();

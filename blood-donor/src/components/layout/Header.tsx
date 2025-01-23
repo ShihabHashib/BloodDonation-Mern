@@ -93,6 +93,22 @@ const Header: React.FC = () => {
                     Profile
                   </Link>
                 )}
+                {userType === "hospital" && (
+                  <Link
+                    to="/hospital-profile"
+                    className="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium"
+                  >
+                    Profile
+                  </Link>
+                )}
+                {userType === "admin" && (
+                  <Link
+                    to="/admin-profile"
+                    className="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium"
+                  >
+                    Profile
+                  </Link>
+                )}
                 <button
                   onClick={handleLogout}
                   className="bg-white text-red-600 px-4 py-2 text-sm font-medium hover:bg-gray-100"
@@ -156,6 +172,24 @@ const Header: React.FC = () => {
                   {userType === "donor" && (
                     <Link
                       to="/donor-profile"
+                      className="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      Profile
+                    </Link>
+                  )}
+                  {userType === "hospital" && (
+                    <Link
+                      to="/hospital-profile"
+                      className="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      Profile
+                    </Link>
+                  )}
+                  {userType === "admin" && (
+                    <Link
+                      to="/admin-profile"
                       className="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium"
                       onClick={() => setIsMenuOpen(false)}
                     >

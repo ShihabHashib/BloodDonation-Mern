@@ -1,11 +1,45 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { User, DonationSchedule } from "../types";
-import { MOCK_USER } from "../data";
+import { useAuth } from "../context/AuthContext";
+import { Donor } from "../types";
+import { donorService } from "../utils/apiService";
 
 const DonorProfile: React.FC = () => {
   const navigate = useNavigate();
-  const donorData = MOCK_USER;
+  const { user } = useAuth();
+  const [donorData, setDonorData] = useState<Donor | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const data = await donorService.getProfile(user?.id || "");
+        setDonorData(data);
+      } catch (error) {
+        console.error("Error fetching profile:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (user?.id) {
+      fetchProfile();
+    } else {
+      setLoading(false);
+    }
+  }, [user?.id]);
+
+  const handleUpdateProfile = async (updateData: Partial<Donor>) => {
+    try {
+      const updatedData = await donorService.updateProfile(
+        user?.id || "",
+        updateData
+      );
+      setDonorData(updatedData);
+    } catch (error) {
+      console.error("Error updating profile:", error);
+    }
+  };
 
   const calculateProgress = (lastDonationDate: string): number => {
     const lastDonation = new Date(lastDonationDate);
@@ -36,6 +70,10 @@ const DonorProfile: React.FC = () => {
     return 0; // Return 0 if already eligible
   };
 
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-4xl mx-auto">
@@ -45,11 +83,11 @@ const DonorProfile: React.FC = () => {
             <div className="flex items-center space-x-4">
               <div className="h-20 w-20 rounded-full bg-white flex items-center justify-center">
                 <span className="text-2xl text-red-600 font-bold">
-                  {donorData.bloodType}
+                  {donorData?.bloodType}
                 </span>
               </div>
               <div className="text-white">
-                <h1 className="text-2xl font-bold">{donorData.name}</h1>
+                <h1 className="text-2xl font-bold">{donorData?.fullName}</h1>
                 <p className="text-red-100">Regular Donor</p>
               </div>
             </div>
@@ -67,19 +105,19 @@ const DonorProfile: React.FC = () => {
                   <label className="block text-sm font-medium text-gray-600">
                     Email
                   </label>
-                  <p className="mt-1">{donorData.email}</p>
+                  <p className="mt-1">{donorData?.email}</p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-600">
                     Phone
                   </label>
-                  <p className="mt-1">{donorData.phone}</p>
+                  <p className="mt-1">{donorData?.phone}</p>
                 </div>
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-600">
                     Address
                   </label>
-                  <p className="mt-1">{donorData.address}</p>
+                  <p className="mt-1">{donorData?.address}</p>
                 </div>
               </div>
             </div>
@@ -93,13 +131,13 @@ const DonorProfile: React.FC = () => {
                     <label className="block text-sm font-medium text-gray-600">
                       Last Donation
                     </label>
-                    <p className="mt-1">{donorData.lastDonation}</p>
+                    <p className="mt-1">{donorData?.lastDonation}</p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-600">
                       Total Donations
                     </label>
-                    <p className="mt-1">{donorData.totalDonations} times</p>
+                    <p className="mt-1">{donorData?.totalDonations} times</p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-600">
@@ -121,15 +159,17 @@ const DonorProfile: React.FC = () => {
                     <div
                       className="h-full bg-red-600 rounded-full transition-all duration-500"
                       style={{
-                        width: `${calculateProgress(donorData.lastDonation)}%`,
+                        width: `${calculateProgress(
+                          donorData?.lastDonation || ""
+                        )}%`,
                       }}
                     />
                   </div>
                   <p className="text-sm text-gray-600 mt-2">
-                    {calculateDaysRemaining(donorData.lastDonation) === 0
+                    {calculateDaysRemaining(donorData?.lastDonation || "") === 0
                       ? "You are eligible to donate!"
                       : `${calculateDaysRemaining(
-                          donorData.lastDonation
+                          donorData?.lastDonation || ""
                         )} days remaining`}
                   </p>
                 </div>

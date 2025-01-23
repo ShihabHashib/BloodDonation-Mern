@@ -35,16 +35,32 @@ const DonorRegistration = () => {
 
   const onSubmit = async (data: DonorFormData) => {
     try {
-      // Simulating API call with a timeout
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const response = await fetch(
+        "http://localhost:5000/api/donors/register",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        }
+      );
 
-      // Mock successful registration
-      console.log("Donor registration data:", data);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Registration failed");
+      }
+
       showNotification("success", "Registration successful!");
       reset();
+      // Optionally redirect to login page
+      // navigate('/login');
     } catch (error) {
       console.error("Error registering donor:", error);
-      showNotification("error", "Registration failed. Please try again later.");
+      showNotification(
+        "error",
+        error.message || "Registration failed. Please try again later."
+      );
     }
   };
 

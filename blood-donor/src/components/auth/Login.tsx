@@ -1,17 +1,11 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { EnvelopeIcon, LockClosedIcon } from "@heroicons/react/24/outline";
-import { LoginCredentials } from "../../types";
 import { useAuth } from "../../context/AuthContext";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-
-interface LoginForm {
-  email: string;
-  password: string;
-}
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -43,9 +37,9 @@ const Login = () => {
         email: data.email,
         password: data.password,
       });
-      navigate("/dashboard");
-    } catch (err) {
-      setError("Invalid email or password");
+      navigate("/donor-profile"); // Or wherever you want to redirect after login
+    } catch (error: any) {
+      setError(error.message || "Invalid email or password");
     } finally {
       setLoading(false);
     }

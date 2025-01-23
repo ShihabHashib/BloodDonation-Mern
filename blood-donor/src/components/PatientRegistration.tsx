@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { API_ENDPOINTS } from "../config/api";
+import { API_ENDPOINTS } from "../config/apiEndpoints";
 import { useNotification } from "../context/NotificationContext";
 
 const patientSchema = z.object({
@@ -78,6 +78,11 @@ const PatientRegistration = () => {
       );
       reset();
       generateNewCaptcha();
+
+      // Add delay before redirect
+      setTimeout(() => {
+        window.location.href = "/blood-request";
+      }, 2000); // 2 seconds delay
     } catch (error) {
       console.error("Error registering patient:", error);
       showNotification(

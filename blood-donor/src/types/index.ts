@@ -62,6 +62,14 @@ export interface LoginCredentials {
     password: string;
 }
 
+export interface AuthUser {
+    id: string;
+    fullName: string;
+    email: string;
+    token: string;
+    type: string;
+}
+
 // Notification related types
 export type NotificationType = 'success' | 'error' | 'warning' | 'info';
 
@@ -113,4 +121,20 @@ export interface IBloodRequest {
     createdAt: string;
     updatedAt: string;
     postedBy: string;
+}
+
+export interface Donor {
+    id: string;
+    fullName: string;
+    email: string;
+    phone: string;
+    bloodType: string;
+    address?: string;
+    lastDonation?: string;
+    totalDonations: number;
+    donationHistory?: Array<{
+        date: string;
+        location: string;
+        notes?: string;
+    }>;
 } 

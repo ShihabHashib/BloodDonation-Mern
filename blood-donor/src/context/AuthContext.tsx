@@ -1,112 +1,90 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
-import { useNotification } from "./NotificationContext";
-
-// Define proper types for the context
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  bloodType?: string;
-}
-
-interface LoginCredentials {
-  email: string;
-  password: string;
-}
+import React, { createContext, useContext, useState } from "react";
+import { LoginCredentials, AuthUser } from "../types";
+import { API_ENDPOINTS } from "../config/apiEndpoints";
 
 interface AuthContextType {
-  isLoggedIn: boolean;
-  userType: "donor" | "patient" | null;
-  user: User | null;
+  user: AuthUser | null;
   login: (credentials: LoginCredentials) => Promise<void>;
   logout: () => void;
+  isAuthenticated: boolean;
+  isLoggedIn: boolean;
+  userType: string | null;
 }
 
-// Create context with proper type
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const { showNotification } = useNotification();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userType, setUserType] = useState<"donor" | "patient" | null>(null);
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(() => {
+    const storedUser = localStorage.getItem("user");
+    return storedUser ? JSON.parse(storedUser) : null;
+  });
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    return !!localStorage.getItem("user");
+  });
+  const [userType, setUserType] = useState<string | null>(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      const userData = JSON.parse(storedUser);
+      return userData.type || null;
+    }
+    return null;
+  });
 
   const login = async (credentials: LoginCredentials) => {
     try {
-      const response = await fetch("/api/login", {
+      const response = await fetch(API_ENDPOINTS.DONORS.LOGIN, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(credentials),
       });
 
       if (!response.ok) {
-        throw new Error("Invalid credentials");
+        const error = await response.json();
+        throw new Error(error.message || "Login failed");
       }
 
       const data = await response.json();
-      setUser(data.user);
-      setUserType(data.userType);
-      setIsLoggedIn(true);
-      localStorage.setItem("token", data.token);
+      console.log("Login response:", data);
 
-      showNotification("success", "Successfully logged in!");
+      const userData: AuthUser = {
+        id: data.donor.id,
+        fullName: data.donor.fullName,
+        email: data.donor.email,
+        token: data.token,
+        type: "donor",
+      };
+
+      localStorage.setItem("user", JSON.stringify(userData));
+      setUser(userData);
+      setIsAuthenticated(true);
+      setUserType("donor");
     } catch (error) {
-      showNotification(
-        "error",
-        error instanceof Error ? error.message : "Login failed"
-      );
+      console.error("Login error:", error);
       throw error;
     }
   };
 
   const logout = () => {
+    localStorage.removeItem("user");
     setUser(null);
+    setIsAuthenticated(false);
     setUserType(null);
-    setIsLoggedIn(false);
-    localStorage.removeItem("token");
-    showNotification("info", "You have been logged out");
   };
 
-  useEffect(() => {
-    // Check for existing token on app load
-    const token = localStorage.getItem("token");
-    if (token) {
-      // Here you would typically validate the token with your backend
-      // For now, we'll just simulate a check
-      const validateToken = async () => {
-        try {
-          const response = await fetch("/api/validate-token", {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
+  const value = {
+    user,
+    login,
+    logout,
+    isAuthenticated,
+    isLoggedIn: !!user,
+    userType,
+  };
 
-          if (response.ok) {
-            const data = await response.json();
-            setUser(data.user);
-            setUserType(data.userType);
-            setIsLoggedIn(true);
-          } else {
-            // If token is invalid, clear it
-            localStorage.removeItem("token");
-          }
-        } catch (error) {
-          console.error("Error validating token:", error);
-          localStorage.removeItem("token");
-        }
-      };
-
-      validateToken();
-    }
-  }, []);
-
-  return (
-    <AuthContext.Provider value={{ isLoggedIn, userType, user, login, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {
